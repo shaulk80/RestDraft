@@ -1,4 +1,5 @@
 using Avalonia;
+using Avalonia.Automation;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Headless;
@@ -63,7 +64,7 @@ public class CollectionsTreeViewInteractionTests
         var item = FindItem(sidebar.Roots[0]);
         var text = item.GetVisualDescendants().OfType<TextBlock>().First(block => block.Text == sidebar.Roots[0].Name);
         var rowTop = item.TranslatePoint(new Point(0, 0), _window)!.Value;
-        var textLeft = text.TranslatePoint(new Point(0, 0), _window)!.Value.X;
+        var textLeft = FindContent(sidebar.Roots[0]).TranslatePoint(new Point(0, 0), _window)!.Value.X;
         var x = offset > 0 ? rowTop.X + offset : textLeft + offset;
 
         Click(new Point(x, rowTop.Y + text.Bounds.Height * 2 * fractionY));
@@ -80,10 +81,10 @@ public class CollectionsTreeViewInteractionTests
         var text = item.GetVisualDescendants().OfType<TextBlock>().First(block => block.Text == sidebar.Roots[0].Name);
         var left = expander.TranslatePoint(new Point(0, 0), item)!.Value.X;
         var right = left + expander.Bounds.Width;
-        var textLeft = text.TranslatePoint(new Point(0, 0), item)!.Value.X;
+        var contentLeft = FindContent(sidebar.Roots[0]).TranslatePoint(new Point(0, 0), item)!.Value.X;
 
         Assert.That(left, Is.LessThanOrEqualTo(2), "starts at the left edge of the row");
-        Assert.That(right, Is.GreaterThanOrEqualTo(textLeft - 2), "reaches the text");
+        Assert.That(right, Is.GreaterThanOrEqualTo(contentLeft - 2), "reaches the icon and the text");
         Assert.That(expander.Bounds.Height, Is.GreaterThanOrEqualTo(text.Bounds.Height + 8), "as high as the row");
     }
 
@@ -363,6 +364,36 @@ public class CollectionsTreeViewInteractionTests
         Assert.That(opened, Is.Empty);
     }
 
+    [TestCase(nameof(TreeNodeViewModel.IsCollection), 0, 15d)]
+    [TestCase(nameof(TreeNodeViewModel.IsFolder), 1, 15d)]
+    [TestCase(nameof(TreeNodeViewModel.IsRequest), 2, 14d)]
+    [AvaloniaTest]
+    public async Task CollectionsAndFoldersHaveAnIconAndALargerFontThanRequests(string kind, int index, double fontSize)
+    {
+        var sidebar = await OpenSidebarWithAllNodeKindsAsync();
+        var nodes = new[] { sidebar.Roots[0], sidebar.Roots[0].Children[0], sidebar.Roots[0].Children[0].Children[0] };
+        var row = FindItem(nodes[index]);
+
+        var icons = row.GetVisualDescendants().OfType<Avalonia.Controls.Shapes.Path>()
+            .Where(path => path.Classes.Contains("nodeIcon") && path.IsEffectivelyVisible && ReferenceEquals(path.DataContext, nodes[index]))
+            .ToList();
+        var text = row.GetVisualDescendants().OfType<TextBlock>().First(block => block.Text == nodes[index].Name);
+
+        Assert.That(icons, Has.Count.EqualTo(kind == nameof(TreeNodeViewModel.IsRequest) ? 0 : 1));
+        Assert.That(text.FontSize, Is.EqualTo(fontSize));
+    }
+
+    private async Task<CollectionsTreeViewModel> OpenSidebarWithAllNodeKindsAsync()
+    {
+        var request = new RequestDefinition { Id = Guid.NewGuid(), Name = "Login" };
+        var users = new Folder(Guid.NewGuid(), "Users", [], [request]);
+        var root = new Folder(Guid.NewGuid(), string.Empty, [users], []);
+        var sidebar = await OpenSidebarAsync([new Collection(Guid.NewGuid(), "Shop", root)]);
+        ClickExpander(sidebar.Roots[0]);
+        ClickExpander(sidebar.Roots[0].Children[0]);
+        return sidebar;
+    }
+
     private async Task<CollectionsTreeViewModel> OpenSidebarWithRequestAsync(bool opensOnSingleClick)
     {
         var request = new RequestDefinition { Id = Guid.NewGuid(), Name = "Login" };
@@ -415,6 +446,13 @@ public class CollectionsTreeViewInteractionTests
     private TreeViewItem FindItem(TreeNodeViewModel node)
     {
         return _window.GetVisualDescendants().OfType<TreeViewItem>().First(item => ReferenceEquals(item.DataContext, node));
+    }
+
+    // The row content that follows the expander: the icon (collections and folders) and the text.
+    private Grid FindContent(TreeNodeViewModel node)
+    {
+        return FindItem(node).GetVisualDescendants().OfType<Grid>()
+            .First(grid => ReferenceEquals(grid.DataContext, node) && AutomationProperties.GetName(grid) == node.Name);
     }
 
     private ToggleButton FindExpander(TreeNodeViewModel node)

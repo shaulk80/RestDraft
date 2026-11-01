@@ -58,6 +58,8 @@ public abstract class TreeNodeViewModel : ViewModelBase
 
     public virtual bool IsCollection => false;
 
+    public virtual bool IsFolder => false;
+
     // Folder that receives a node dropped on this one, and the sibling to insert before (null appends).
     public abstract Guid DropFolderId { get; }
 
