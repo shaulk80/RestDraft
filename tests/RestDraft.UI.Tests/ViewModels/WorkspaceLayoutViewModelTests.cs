@@ -109,6 +109,35 @@ public class WorkspaceLayoutViewModelTests
     }
 
     [Test]
+    public void ApplyTakesTheStoredWindowSizeAndStateOnlyTheFirstTime()
+    {
+        _layout.Apply(AppSettings.Default with { WindowWidth = 1000, WindowHeight = 600, WindowMaximized = true });
+
+        _layout.Apply(AppSettings.Default with { WindowWidth = 900, WindowHeight = 500, WindowMaximized = false });
+
+        Assert.That(_layout.WindowWidth, Is.EqualTo(1000));
+        Assert.That(_layout.WindowHeight, Is.EqualTo(600));
+        Assert.That(_layout.IsWindowMaximized, Is.True);
+    }
+
+    [TestCase(1000, 600, true, 1000, 600)]
+    [TestCase(1000.4, 600.6, false, 1000, 601)]
+    [TestCase(10, 10, false, 760, 420)]
+    [TestCase(99999, 99999, true, 20000, 20000)]
+    public async Task RememberingTheWindowStoresItClampedAndKeepsTheOtherSettings(
+        double width, double height, bool maximized, int expectedWidth, int expectedHeight)
+    {
+        var result = await _layout.RememberWindowAsync(width, height, maximized);
+
+        var stored = (await _settings.GetAsync(CancellationToken.None)).Value!;
+        Assert.That(result.IsSuccess, Is.True);
+        Assert.That(stored.WindowWidth, Is.EqualTo(expectedWidth));
+        Assert.That(stored.WindowHeight, Is.EqualTo(expectedHeight));
+        Assert.That(stored.WindowMaximized, Is.EqualTo(maximized));
+        Assert.That(stored.TimeoutSeconds, Is.EqualTo(12));
+    }
+
+    [Test]
     public async Task RememberingVisibilityStoresItAndKeepsTheOtherSettings()
     {
         _layout.IsSidebarVisible = false;

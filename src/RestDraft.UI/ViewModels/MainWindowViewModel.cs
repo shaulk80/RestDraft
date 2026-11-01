@@ -91,6 +91,11 @@ public sealed class MainWindowViewModel : ViewModelBase
         ReportFailure(await Layout.RememberVisibilityAsync());
     }
 
+    public async Task RememberWindowAsync(double normalWidth, double normalHeight, bool isMaximized)
+    {
+        ReportFailure(await Layout.RememberWindowAsync(normalWidth, normalHeight, isMaximized));
+    }
+
     public async Task OpenRequestAsync(Guid requestId)
     {
         var opened = await TabStrip.OpenRequestAsync(requestId);

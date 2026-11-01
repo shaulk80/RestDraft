@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -19,10 +20,14 @@ public partial class MainWindow : Window
     private readonly TextEditTarget _editTarget = new();
     private MainWindowViewModel? _viewModel;
     private bool _tabsStored;
+    private Size _normalSize;
 
     public MainWindow()
     {
         InitializeComponent();
+        _normalSize = new Size(Width, Height);
+        // The size to remember is the one of the normal window, so a maximized size never replaces it.
+        SizeChanged += OnWindowSizeChanged;
         // Ctrl+Tab is taken before any control sees it. The tab controls would switch their own tabs otherwise,
         // and the code editor would type a tab.
         AddHandler(KeyDownEvent, OnPreviewKeyDown, RoutingStrategies.Tunnel);
@@ -59,6 +64,7 @@ public partial class MainWindow : Window
         if (_viewModel is { } viewModel)
         {
             await viewModel.ApplySettingsAsync();
+            ApplyWindowState(viewModel.Layout);
             await viewModel.Sidebar.ReloadAsync();
             await viewModel.History.ReloadAsync();
             await viewModel.Environments.ReloadAsync();
@@ -77,11 +83,55 @@ public partial class MainWindow : Window
         }
 
         e.Cancel = true;
+        RememberNormalSize();
         await RememberPanelWidthsAsync();
         await viewModel.RememberVisibilityAsync();
+        await viewModel.RememberWindowAsync(_normalSize.Width, _normalSize.Height, WindowState == WindowState.Maximized);
         await viewModel.TabStrip.FlushAsync();
         _tabsStored = true;
         Close();
+    }
+
+    // Maximizing resizes the window before WindowState says Maximized, so the size is read a moment later,
+    // when the state is known.
+    private void OnWindowSizeChanged(object? sender, SizeChangedEventArgs e)
+    {
+        Dispatcher.UIThread.Post(RememberNormalSize, DispatcherPriority.Background);
+    }
+
+    private void RememberNormalSize()
+    {
+        if (WindowState == WindowState.Normal)
+        {
+            _normalSize = new Size(Bounds.Width, Bounds.Height);
+        }
+    }
+
+    // Done once, when the window opens. The Settings dialog applies the settings again, but must not resize the window.
+    private void ApplyWindowState(WorkspaceLayoutViewModel layout)
+    {
+        var size = FitToScreen(new Size(layout.WindowWidth, layout.WindowHeight));
+        Width = size.Width;
+        Height = size.Height;
+        _normalSize = size;
+        if (layout.IsWindowMaximized)
+        {
+            WindowState = WindowState.Maximized;
+        }
+    }
+
+    // A size stored on a larger screen must not leave the window bigger than the screen it opens on.
+    private Size FitToScreen(Size size)
+    {
+        if (Screens.ScreenFromWindow(this) is not { } screen)
+        {
+            return size;
+        }
+
+        var area = screen.WorkingArea;
+        var width = Math.Min(size.Width, area.Width / screen.Scaling);
+        var height = Math.Min(size.Height, area.Height / screen.Scaling);
+        return new Size(Math.Max(width, MinWidth), Math.Max(height, MinHeight));
     }
 
     // The details view is shared by all tabs, so the new tab's body is on screen only after the next layout pass.

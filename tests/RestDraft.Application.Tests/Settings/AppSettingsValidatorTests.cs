@@ -62,6 +62,19 @@ public class AppSettingsValidatorTests
         Assert.That(response.IsSuccess, Is.EqualTo(expectedValid));
     }
 
+    [TestCase(760, 420, true)]
+    [TestCase(20000, 20000, true)]
+    [TestCase(759, 420, false)]
+    [TestCase(760, 419, false)]
+    [TestCase(20001, 420, false)]
+    [TestCase(760, 20001, false)]
+    public void WindowSizeMustBeInRange(int width, int height, bool expectedValid)
+    {
+        var result = AppSettingsValidator.Validate(new AppSettings { WindowWidth = width, WindowHeight = height });
+
+        Assert.That(result.IsSuccess, Is.EqualTo(expectedValid));
+    }
+
     [TestCase("", true)]
     [TestCase("http://proxy:8080", true)]
     [TestCase("https://proxy.example.com", true)]

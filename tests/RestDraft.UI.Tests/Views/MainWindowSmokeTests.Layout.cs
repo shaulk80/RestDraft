@@ -300,6 +300,55 @@ public partial class MainWindowSmokeTests
         Assert.That(PanelColumn("RequestPanels", 2).ActualWidth, Is.EqualTo(500).Within(1));
     }
 
+    [AvaloniaTest]
+    public void StoredWindowSizeIsAppliedAtStart()
+    {
+        _initialSettings = AppSettings.Default with { WindowWidth = 900, WindowHeight = 600 };
+
+        OpenWindow();
+
+        Assert.That(_window.Width, Is.EqualTo(900));
+        Assert.That(_window.Height, Is.EqualTo(600));
+        Assert.That(_window.WindowState, Is.EqualTo(WindowState.Normal));
+    }
+
+    [AvaloniaTest]
+    public void StoredMaximizedStateIsAppliedAtStart()
+    {
+        _initialSettings = AppSettings.Default with { WindowMaximized = true };
+
+        OpenWindow();
+
+        Assert.That(_window.WindowState, Is.EqualTo(WindowState.Maximized));
+    }
+
+    [TestCase(false, WindowState.Normal)]
+    [TestCase(true, WindowState.Maximized)]
+    [AvaloniaTest]
+    public async Task ClosingTheWindowStoresItsNormalSizeAndWhetherItIsMaximized(bool maximize, WindowState expectedState)
+    {
+        OpenWindow();
+        _window.Width = 1000;
+        _window.Height = 650;
+        _window.UpdateLayout();
+        Dispatcher.UIThread.RunJobs();
+        if (maximize)
+        {
+            _window.WindowState = WindowState.Maximized;
+            Dispatcher.UIThread.RunJobs();
+        }
+
+        _window.Close();
+        await Task.Delay(100);
+        Dispatcher.UIThread.RunJobs();
+
+        var stored = (await _settings.GetAsync(CancellationToken.None)).Value!;
+        Assert.That(_window.WindowState, Is.EqualTo(expectedState));
+        Assert.That(stored.WindowMaximized, Is.EqualTo(maximize));
+        Assert.That(stored.WindowWidth, Is.EqualTo(1000));
+        Assert.That(stored.WindowHeight, Is.EqualTo(650));
+    }
+
     [TestCase(ThemePreference.Dark)]
     [TestCase(ThemePreference.Light)]
     [AvaloniaTest]

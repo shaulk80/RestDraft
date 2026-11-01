@@ -42,6 +42,9 @@ public class AppSettingsStorageTests
             SidebarVisible = false,
             ResponseVisible = false,
             TopBarVisible = false,
+            WindowWidth = 1000,
+            WindowHeight = 600,
+            WindowMaximized = true,
         };
 
         await _storage.SaveAsync(settings, CancellationToken.None);
@@ -59,6 +62,9 @@ public class AppSettingsStorageTests
     [TestCase("ui.theme", "Purple")]
     [TestCase("ui.theme", "7")]
     [TestCase("ui.theme", "")]
+    [TestCase("ui.windowWidth", "wide")]
+    [TestCase("ui.windowHeight", "-1")]
+    [TestCase("ui.windowMaximized", "maybe")]
     [TestCase("ui.sidebarWidth", "wide")]
     [TestCase("ui.responseWidth", "-1")]
     [TestCase("ui.sidebarVisible", "0")]
