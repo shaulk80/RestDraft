@@ -4,8 +4,8 @@ using RestDraft.Domain.Results;
 namespace RestDraft.UI.ViewModels;
 
 // The sizes of the Collections and Response panels, and whether they and the top bar are shown. The widths are
-// stored in the settings when a splitter is released, and what is shown when the window closes. Both come back
-// at the next start. Hiding a panel keeps its width.
+// stored in the settings when a splitter is released, and what is shown and the size and state of the window when
+// the window closes. All come back at the next start. Hiding a panel keeps its width.
 public sealed class WorkspaceLayoutViewModel : ViewModelBase
 {
     private readonly ISettingsService _settings;
@@ -15,6 +15,9 @@ public sealed class WorkspaceLayoutViewModel : ViewModelBase
     private bool _isResponseVisible = true;
     private bool _isTopBarVisible = true;
     private bool _visibilityRestored;
+    private double _windowWidth = AppSettings.Default.WindowWidth;
+    private double _windowHeight = AppSettings.Default.WindowHeight;
+    private bool _isWindowMaximized;
 
     public WorkspaceLayoutViewModel(ISettingsService settings)
     {
@@ -52,9 +55,29 @@ public sealed class WorkspaceLayoutViewModel : ViewModelBase
         set => SetProperty(ref _isTopBarVisible, value);
     }
 
-    // The widths are taken every time. What is shown is taken only the first time: after that the View menu
-    // holds the current state, and it is stored when the window closes, so a later call (after the Settings
-    // dialog) must not bring back the old state.
+    // The size of the window when it is not maximized. The window sets them from its own size while it changes,
+    // and they are stored when it closes.
+    public double WindowWidth
+    {
+        get => _windowWidth;
+        private set => SetProperty(ref _windowWidth, value);
+    }
+
+    public double WindowHeight
+    {
+        get => _windowHeight;
+        private set => SetProperty(ref _windowHeight, value);
+    }
+
+    public bool IsWindowMaximized
+    {
+        get => _isWindowMaximized;
+        private set => SetProperty(ref _isWindowMaximized, value);
+    }
+
+    // The widths are taken every time. What is shown and the state of the window are taken only the first time:
+    // after that the View menu and the window hold the current state, and it is stored when the window closes,
+    // so a later call (after the Settings dialog) must not bring back the old state.
     public void Apply(AppSettings settings)
     {
         SidebarWidth = settings.SidebarWidth;
@@ -65,6 +88,9 @@ public sealed class WorkspaceLayoutViewModel : ViewModelBase
         }
 
         _visibilityRestored = true;
+        WindowWidth = settings.WindowWidth;
+        WindowHeight = settings.WindowHeight;
+        IsWindowMaximized = settings.WindowMaximized;
         IsSidebarVisible = settings.SidebarVisible;
         IsResponseVisible = settings.ResponseVisible;
         IsTopBarVisible = settings.TopBarVisible;
@@ -72,6 +98,15 @@ public sealed class WorkspaceLayoutViewModel : ViewModelBase
 
     public Task<Result> RememberVisibilityAsync()
     {
+        return StoreAsync();
+    }
+
+    // The size is the one of the normal window. A maximized window keeps the size it had before.
+    public Task<Result> RememberWindowAsync(double normalWidth, double normalHeight, bool isMaximized)
+    {
+        WindowWidth = Math.Clamp(Math.Round(normalWidth), AppSettingsValidator.MinWindowWidth, AppSettingsValidator.MaxWindowSize);
+        WindowHeight = Math.Clamp(Math.Round(normalHeight), AppSettingsValidator.MinWindowHeight, AppSettingsValidator.MaxWindowSize);
+        IsWindowMaximized = isMaximized;
         return StoreAsync();
     }
 
@@ -107,6 +142,9 @@ public sealed class WorkspaceLayoutViewModel : ViewModelBase
             SidebarVisible = IsSidebarVisible,
             ResponseVisible = IsResponseVisible,
             TopBarVisible = IsTopBarVisible,
+            WindowWidth = (int)WindowWidth,
+            WindowHeight = (int)WindowHeight,
+            WindowMaximized = IsWindowMaximized,
         };
         return await _settings.SaveAsync(updated, CancellationToken.None);
     }

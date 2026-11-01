@@ -24,6 +24,7 @@ public partial class MainWindowSmokeTests
 {
     private static readonly string[] PageHeaders = ["Body", "Params (0)", "Headers (0)", "Authorization"];
     private static readonly string[] MenuTitles = ["_File", "_Edit", "_View", "_Tools", "_Help"];
+    private const double MinDetailsHeight = 40;
 
     [AvaloniaTest]
     public void RequestPagesStartWithTheBodyAndAFreshTabOpensOnIt()
@@ -299,6 +300,55 @@ public partial class MainWindowSmokeTests
         Assert.That(PanelColumn("RequestPanels", 2).ActualWidth, Is.EqualTo(500).Within(1));
     }
 
+    [AvaloniaTest]
+    public void StoredWindowSizeIsAppliedAtStart()
+    {
+        _initialSettings = AppSettings.Default with { WindowWidth = 900, WindowHeight = 600 };
+
+        OpenWindow();
+
+        Assert.That(_window.Width, Is.EqualTo(900));
+        Assert.That(_window.Height, Is.EqualTo(600));
+        Assert.That(_window.WindowState, Is.EqualTo(WindowState.Normal));
+    }
+
+    [AvaloniaTest]
+    public void StoredMaximizedStateIsAppliedAtStart()
+    {
+        _initialSettings = AppSettings.Default with { WindowMaximized = true };
+
+        OpenWindow();
+
+        Assert.That(_window.WindowState, Is.EqualTo(WindowState.Maximized));
+    }
+
+    [TestCase(false, WindowState.Normal)]
+    [TestCase(true, WindowState.Maximized)]
+    [AvaloniaTest]
+    public async Task ClosingTheWindowStoresItsNormalSizeAndWhetherItIsMaximized(bool maximize, WindowState expectedState)
+    {
+        OpenWindow();
+        _window.Width = 1000;
+        _window.Height = 650;
+        _window.UpdateLayout();
+        Dispatcher.UIThread.RunJobs();
+        if (maximize)
+        {
+            _window.WindowState = WindowState.Maximized;
+            Dispatcher.UIThread.RunJobs();
+        }
+
+        _window.Close();
+        await Task.Delay(100);
+        Dispatcher.UIThread.RunJobs();
+
+        var stored = (await _settings.GetAsync(CancellationToken.None)).Value!;
+        Assert.That(_window.WindowState, Is.EqualTo(expectedState));
+        Assert.That(stored.WindowMaximized, Is.EqualTo(maximize));
+        Assert.That(stored.WindowWidth, Is.EqualTo(1000));
+        Assert.That(stored.WindowHeight, Is.EqualTo(650));
+    }
+
     [TestCase(ThemePreference.Dark)]
     [TestCase(ThemePreference.Light)]
     [AvaloniaTest]
@@ -337,6 +387,44 @@ public partial class MainWindowSmokeTests
         var stored = (await _settings.GetAsync(CancellationToken.None)).Value!;
         Assert.That(after, Is.EqualTo(before + 100).Within(2));
         Assert.That(stored.ResponseWidth, Is.EqualTo((int)Math.Round(after)).Within(1));
+    }
+
+    // Dragging the splitter to the bottom edge used to leave it with no room to grab, so the response could not be resized again.
+    [AvaloniaTest]
+    public void DraggingTheDetailsSplitterToTheBottomLeavesItReachableAndMovableBack()
+    {
+        OpenWindow();
+        var response = _window.GetVisualDescendants().OfType<ResponseView>().Single();
+        var splitter = FindDetailsSplitter();
+
+        DragSplitterBy(splitter, 2000);
+        var bottomEdge = splitter.TranslatePoint(new Point(0, splitter.Bounds.Height), response)!.Value.Y;
+        Assert.That(bottomEdge, Is.LessThanOrEqualTo(response.Bounds.Height - MinDetailsHeight).Within(1));
+
+        var heightBefore = DetailsRow(response).ActualHeight;
+        DragSplitterBy(splitter, -100);
+        Assert.That(DetailsRow(response).ActualHeight, Is.EqualTo(heightBefore + 100).Within(2));
+    }
+
+    private GridSplitter FindDetailsSplitter()
+    {
+        return _window.GetVisualDescendants().OfType<GridSplitter>()
+            .First(candidate => AutomationProperties.GetName(candidate) == "Resize the response details");
+    }
+
+    private static RowDefinition DetailsRow(ResponseView response)
+    {
+        return response.GetVisualDescendants().OfType<Grid>().First().RowDefinitions[3];
+    }
+
+    private void DragSplitterBy(GridSplitter splitter, double deltaY)
+    {
+        var start = splitter.TranslatePoint(new Point(splitter.Bounds.Width / 2, splitter.Bounds.Height / 2), _window)!.Value;
+        var end = new Point(start.X, start.Y + deltaY);
+        _window.MouseDown(start, MouseButton.Left);
+        _window.MouseMove(end);
+        _window.MouseUp(end, MouseButton.Left);
+        Dispatcher.UIThread.RunJobs();
     }
 
     [AvaloniaTest]

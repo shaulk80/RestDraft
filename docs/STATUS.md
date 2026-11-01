@@ -6,6 +6,8 @@ Updated: 2026-10-31. Keep this file short and current. The old milestone log is 
 
 Version 0.1.1 is released (Windows x64 and Linux x64, unsigned). All planned milestones (M0 to M11) are done and nothing is in progress. New work starts from a pull request; see `CLAUDE.md` for the workflow.
 
+Unreleased, on the branch `feat/ux-window-state-tree-icons-splitter`: the window remembers its size and whether it is maximized (stored in the settings when it closes); collections and folders in the tree have an icon and text one size larger than requests; the response details splitter can no longer be dragged to the bottom edge, where it could not be grabbed again.
+
 ## Releases
 
 | Version | Date | Assets | Notes |

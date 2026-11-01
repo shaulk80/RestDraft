@@ -8,6 +8,9 @@ public static class AppSettingsValidator
     public const int MaxRedirectLimit = 50;
     public const int MinPanelWidth = 100;
     public const int MaxPanelWidth = 4000;
+    public const int MinWindowWidth = 760;
+    public const int MinWindowHeight = 420;
+    public const int MaxWindowSize = 20000;
 
     private static readonly string[] ProxySchemes = ["http", "https", "socks4", "socks4a", "socks5"];
 
@@ -31,6 +34,11 @@ public static class AppSettingsValidator
         if (settings.SidebarWidth is < MinPanelWidth or > MaxPanelWidth || settings.ResponseWidth is < MinPanelWidth or > MaxPanelWidth)
         {
             return Invalid($"A panel width must be between {MinPanelWidth} and {MaxPanelWidth} pixels.");
+        }
+
+        if (settings.WindowWidth is < MinWindowWidth or > MaxWindowSize || settings.WindowHeight is < MinWindowHeight or > MaxWindowSize)
+        {
+            return Invalid($"The window must be at least {MinWindowWidth} by {MinWindowHeight} pixels.");
         }
 
         return ValidateProxy(settings.ProxyUrl);

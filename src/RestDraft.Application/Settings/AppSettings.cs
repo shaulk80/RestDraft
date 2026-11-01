@@ -34,5 +34,12 @@ public sealed record AppSettings
 
     public bool TopBarVisible { get; init; } = true;
 
+    // The size of the main window when it is not maximized, and whether it is maximized. Remembered when the window closes.
+    public int WindowWidth { get; init; } = 1200;
+
+    public int WindowHeight { get; init; } = 720;
+
+    public bool WindowMaximized { get; init; }
+
     public TimeSpan Timeout => TimeSpan.FromSeconds(TimeoutSeconds);
 }
