@@ -6,7 +6,15 @@
              x:Class="RestDraft.UI.Views.ResponseView"
              x:DataType="vm:RequestTabViewModel">
   <!-- From the top: the Pretty and Raw switch (a thin bar), the body, and the rest of the response below a splitter. -->
-  <Grid RowDefinitions="Auto,*,Auto,160">
+  <!-- A splitter honors only the minimum of a row definition, not the MinHeight of the content. Without these two
+       minimums the splitter could be dragged to the bottom edge, where it cannot be grabbed again. -->
+  <Grid>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="*" MinHeight="80" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="160" MinHeight="40" />
+    </Grid.RowDefinitions>
     <Border Grid.Row="0"
             Classes="panel"
             BorderThickness="0,0,0,1"
