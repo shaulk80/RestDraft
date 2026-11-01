@@ -1,12 +1,16 @@
 # RestDraft: status
 
-Updated: 2026-10-31. Keep this file short and current. The old milestone log is in `history/implementation-progress-M0-M11.txt`.
+Updated: 2026-11-01. Keep this file short and current. The old milestone log is in `history/implementation-progress-M0-M11.txt`.
 
 ## Now
 
 Version 0.1.1 is released (Windows x64 and Linux x64, unsigned). All planned milestones (M0 to M11) are done and nothing is in progress. New work starts from a pull request; see `CLAUDE.md` for the workflow.
 
-Unreleased, on the branch `feat/ux-window-state-tree-icons-splitter`: the window remembers its size and whether it is maximized (stored in the settings when it closes); collections and folders in the tree have an icon and text one size larger than requests; the response details splitter can no longer be dragged to the bottom edge, where it could not be grabbed again.
+Since 0.1.1, not released yet:
+
+- The window remembers its size and whether it is maximized.
+- Collections and folders in the tree have an icon and text one size larger than requests.
+- The splitter between the response body and the response details can no longer be dragged to the bottom edge, where it could not be grabbed again.
 
 ## Releases
 
