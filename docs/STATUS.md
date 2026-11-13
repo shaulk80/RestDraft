@@ -31,6 +31,7 @@ v0.1.1 assets: zip `df389225b6bc39757e006cae2ca0f6761f9ce0019e96f7ae1f7f8a3f7d98
 
 - **CI:** `ci.yml` has a Windows job and a Linux job (`ubuntu-24.04`); both run `scripts/build.ps1`, upload their package from `main` and from tags. `release.yml` builds both from a `v*` tag and drafts the release (dry run: manual run from `main`).
 - **Branch protection:** rulesets `protect-main` (pull request, both checks required, up to date, no force push or deletion; admin bypass) and `protect-release-tags` (`v*`, no deletion or force push).
+- **Build policy:** no `TreatWarningsAsErrors`. Nullable warnings and the rules listed in `.editorconfig` fail the build; other analyzer findings are warnings. Reason: the Linux job takes the newest 10.0.x SDK, and its new rule CA2027 broke the build of unchanged code (2026-11-13).
 - **Coverage:** a warning below 80% for Domain and Application; never fails a build.
 - **Verified:** the Windows build (portability checklist section 1), accessibility, Smart App Control (section 3), and Linux on Ubuntu 24.04 under WSL2 (section 5, 13 checks passed).
 - **Not verified:** a full Linux desktop and other distributions; signing.

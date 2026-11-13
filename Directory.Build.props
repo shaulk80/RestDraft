@@ -11,7 +11,10 @@
     <Company>RestDraft contributors</Company>
     <Copyright>Copyright 2026 RestDraft contributors</Copyright>
     <Description>RestDraft - a REST API client</Description>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <!-- Not TreatWarningsAsErrors: a new SDK brings new analyzer rules, and they must not break code that did not change.
+         Nullable warnings are errors here; every other rule that is an error is listed by id in .editorconfig. -->
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <WarningsAsErrors>$(WarningsAsErrors);nullable</WarningsAsErrors>
     <AnalysisLevel>latest-recommended</AnalysisLevel>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
   </PropertyGroup>
