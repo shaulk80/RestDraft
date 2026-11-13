@@ -335,7 +335,7 @@ public class TabStripViewModelTests
 
         strip.NewTab();
 
-        Assert.That(await Task.WhenAny(stored.Task, Task.Delay(TimeSpan.FromSeconds(5))), Is.SameAs(stored.Task));
+        await Assert.ThatAsync(() => stored.Task.WaitAsync(TimeSpan.FromSeconds(5)), Throws.Nothing);
     }
 
     [Test]
