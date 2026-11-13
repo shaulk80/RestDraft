@@ -4,9 +4,9 @@ Updated: 2026-11-13. Keep this file short and current. The old milestone log is 
 
 ## Now
 
-Version 0.1.1 is released (Windows x64 and Linux x64, unsigned). All planned milestones (M0 to M11) are done and nothing is in progress. New work starts from a pull request; see `CLAUDE.md` for the workflow.
+Version 0.1.1 is the latest published release (Windows x64 and Linux x64, unsigned); 0.2.0 is being prepared. All planned milestones (M0 to M11) are done and nothing is in progress. New work starts from a pull request; see `CLAUDE.md` for the workflow.
 
-Since 0.1.1, not released yet:
+In 0.2.0 (not published yet):
 
 - The window remembers its size and whether it is maximized.
 - Collections and folders in the tree have an icon and text one size larger than requests.
@@ -17,6 +17,7 @@ Since 0.1.1, not released yet:
 
 | Version | Date | Assets | Notes |
 |---|---|---|---|
+| v0.2.0 | (set when published) | `RestDraft-win-x64.zip`, `RestDraft-linux-x64.tar.gz`, `SHA256SUMS.txt` | In preparation. Window state, tree icons, taller body editor, splitter fix. |
 | v0.1.1 | 2026-10-31 | `RestDraft-win-x64.zip`, `RestDraft-linux-x64.tar.gz`, `SHA256SUMS.txt` | Built by CI from the tag. Linux added. |
 | v0.1.0 | 2026-10-30 | `RestDraft-win-x64.zip`, `SHA256SUMS.txt` | Windows only, built on the maintainer's machine. |
 
