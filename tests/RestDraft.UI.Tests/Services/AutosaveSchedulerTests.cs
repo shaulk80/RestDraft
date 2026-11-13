@@ -23,7 +23,7 @@ public class AutosaveSchedulerTests
             return Task.CompletedTask;
         });
 
-        Assert.That(await Task.WhenAny(ran.Task, Task.Delay(WaitLimit)), Is.SameAs(ran.Task));
+        await Assert.ThatAsync(() => ran.Task.WaitAsync(WaitLimit), Throws.Nothing);
     }
 
     [Test]
@@ -51,7 +51,7 @@ public class AutosaveSchedulerTests
 
         scheduler.Schedule(() => Record(order, "first", null));
         scheduler.Schedule(() => Record(order, "second", ran));
-        await Task.WhenAny(ran.Task, Task.Delay(WaitLimit));
+        await ran.Task.WaitAsync(WaitLimit);
         await Task.Delay(ShortDelay * 3);
 
         Assert.That(order, Is.EqualTo(ExpectedOrder));
