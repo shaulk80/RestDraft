@@ -8,9 +8,8 @@
   <TabControl SelectedIndex="{Binding SectionIndex, Mode=TwoWay}"
               AutomationProperties.Name="Request details">
     <TabItem Header="Body">
-      <ScrollViewer>
-        <views:BodyEditorView x:Name="Body" Margin="8" DataContext="{Binding BodyEditor}" />
-      </ScrollViewer>
+      <!-- No ScrollViewer: the body editor fills the tab, and its form and multipart tables scroll on their own. -->
+      <views:BodyEditorView x:Name="Body" Margin="8" DataContext="{Binding BodyEditor}" />
     </TabItem>
     <TabItem Header="{Binding QueryParams.Rows.Count, StringFormat='Params ({0})'}">
       <StackPanel Margin="8" Spacing="6">
