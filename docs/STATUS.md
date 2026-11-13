@@ -11,6 +11,7 @@ Since 0.1.1, not released yet:
 - The window remembers its size and whether it is maximized.
 - Collections and folders in the tree have an icon and text one size larger than requests.
 - The splitter between the response body and the response details can no longer be dragged to the bottom edge, where it could not be grabbed again.
+- The raw request body editor fills the height of the Body tab instead of a fixed 320 pixels. The Format error moved from a line under the editor to the toolbar, next to the Format button.
 
 ## Releases
 

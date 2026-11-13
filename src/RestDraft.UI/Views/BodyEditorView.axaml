@@ -5,9 +5,12 @@
              xmlns:views="using:RestDraft.UI.Views"
              x:Class="RestDraft.UI.Views.BodyEditorView"
              x:DataType="vm:BodyEditorViewModel">
-  <StackPanel Spacing="8">
-    <!-- The controls that belong to the body type are to the right of it, so the body gets the height. -->
-    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
+  <!-- The toolbar and the hints are as high as their content, and the body takes all the rest of the height.
+       A row with nothing visible is 0 high, and the gaps are margins, so a hidden row leaves no gap. -->
+  <Grid RowDefinitions="Auto,Auto,*,Auto">
+    <!-- The controls that belong to the body type are to the right of it, so the body gets the height.
+         A message (for example, why Format failed) is shown by the Format button, where the click happened. -->
+    <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="8">
       <ComboBox x:Name="BodyTypeBox"
                 Grid.Column="0"
                 Width="190"
@@ -23,52 +26,61 @@
       <!-- Editable: pick a common type, type another one, or clear the box. -->
       <ComboBox Grid.Column="1"
                 HorizontalAlignment="Stretch"
+                MinWidth="120"
                 IsVisible="{Binding IsRaw}"
                 IsEditable="True"
                 ItemsSource="{Binding ContentTypes}"
                 Text="{Binding ContentType}"
                 PlaceholderText="Content-Type, for example application/json"
                 AutomationProperties.Name="Body content type" />
-      <Button Grid.Column="2"
+      <TextBlock Name="FormatMessage"
+                 Grid.Column="2"
+                 MaxWidth="360"
+                 VerticalAlignment="Center"
+                 Text="{Binding Message}"
+                 IsVisible="{Binding Message, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                 ToolTip.Tip="{Binding Message}"
+                 Classes="error"
+                 TextTrimming="CharacterEllipsis"
+                 AutomationProperties.LiveSetting="Polite" />
+      <Button Grid.Column="3"
               Content="Format"
               IsVisible="{Binding IsRaw}"
               Command="{Binding FormatCommand}"
               IsEnabled="{Binding CanFormat}" />
-      <Button Grid.Column="2"
+      <Button Grid.Column="3"
               Content="{Binding Form.AddRowText}"
               IsVisible="{Binding IsFormUrlEncoded}"
               Command="{Binding Form.AddRowCommand}" />
-      <Button Grid.Column="2"
+      <Button Grid.Column="3"
               Content="Add part"
               IsVisible="{Binding IsMultipart}"
               Command="{Binding Multipart.AddRowCommand}" />
     </Grid>
     <TextBlock Name="NoBodyHint"
+               Grid.Row="1"
+               Margin="0,8,0,0"
                Text="This request sends no body. Choose a body type to add one."
                IsVisible="{Binding IsNone}"
                FontStyle="Italic" />
-    <StackPanel IsVisible="{Binding IsRaw}" Spacing="8">
-      <Border Classes="panel">
-        <controls:CodeEditor x:Name="BodyCodeEditor"
-                             EditorText="{Binding Text}"
-                             Language="{Binding Language}"
-                             WordWrap="True"
-                             Height="320"
-                             AutomationProperties.Name="Request body" />
-      </Border>
-      <TextBlock Text="Highlighting is off for bodies over 1 MB."
-                 IsVisible="{Binding IsLargeBody}"
-                 FontStyle="Italic" />
-    </StackPanel>
-    <StackPanel IsVisible="{Binding IsFormUrlEncoded}">
+    <!-- Only one of the three is visible, and each fills the row. The tables scroll on their own. -->
+    <Border Grid.Row="2" Margin="0,8,0,0" Classes="panel" IsVisible="{Binding IsRaw}">
+      <controls:CodeEditor x:Name="BodyCodeEditor"
+                           EditorText="{Binding Text}"
+                           Language="{Binding Language}"
+                           WordWrap="True"
+                           AutomationProperties.Name="Request body" />
+    </Border>
+    <ScrollViewer Grid.Row="2" Margin="0,8,0,0" IsVisible="{Binding IsFormUrlEncoded}">
       <views:KeyValueEditorView ShowAddButton="False" DataContext="{Binding Form}" />
-    </StackPanel>
-    <StackPanel IsVisible="{Binding IsMultipart}">
+    </ScrollViewer>
+    <ScrollViewer Grid.Row="2" Margin="0,8,0,0" IsVisible="{Binding IsMultipart}">
       <views:MultipartEditorView ShowAddButton="False" DataContext="{Binding Multipart}" />
-    </StackPanel>
-    <TextBlock Text="{Binding Message}"
-               Classes="error"
-               TextWrapping="Wrap"
-               AutomationProperties.LiveSetting="Polite" />
-  </StackPanel>
+    </ScrollViewer>
+    <TextBlock Grid.Row="3"
+               Margin="0,8,0,0"
+               Text="Highlighting is off for bodies over 1 MB."
+               IsVisible="{Binding IsLargeBody}"
+               FontStyle="Italic" />
+  </Grid>
 </UserControl>
