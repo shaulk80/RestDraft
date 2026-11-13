@@ -1,5 +1,25 @@
 # Release notes
 
+## 0.2.0 (window state, tree icons and a taller body editor)
+
+Small improvements to the window and the request editor. The packages are the same as in 0.1.1: `RestDraft-win-x64.zip`, `RestDraft-linux-x64.tar.gz` and `SHA256SUMS.txt`, built by GitHub Actions from the release tag.
+
+### What changed
+
+- The window remembers its size and whether it is maximized.
+- Collections and folders in the tree have an icon and text one size larger than requests.
+- The request body editor fills the height of the Body tab (it was a fixed 320 pixels), so a long body needs less scrolling. The message shown when Format fails now appears next to the Format button instead of under the editor.
+- The splitter between the response body and the response details can no longer be dragged to the bottom edge, where it could not be grabbed again.
+- Internal: the build fails on nullable warnings and on a list of analyzer rules, and other analyzer findings are warnings, so a new .NET SDK cannot break the build of unchanged code. This changes nothing for users.
+
+### Not signed
+
+The executables are not code-signed. SignPath Foundation declined the application for now, because the project does not yet have enough public visibility, and the project will apply again later. See the README for the SmartScreen and Smart App Control notes (Windows), and verify every download against `SHA256SUMS.txt`.
+
+### Known limitations
+
+The limitations listed under 0.1.1 (Linux) and 0.1.0 still apply.
+
 ## 0.1.1 (Windows and Linux)
 
 Adds a Linux x64 package. The program itself has the same features as 0.1.0. Both packages are built by GitHub Actions from the release tag (0.1.0 was built on the maintainer's machine). `SHA256SUMS.txt` lists both.
