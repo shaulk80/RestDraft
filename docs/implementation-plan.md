@@ -74,7 +74,7 @@ Namespaces follow folders: `RestDraft.Domain.Collections`, `RestDraft.Applicatio
 
 ### 3.5 Build Configuration
 
-- `Directory.Build.props`: `Nullable` enabled, `TreatWarningsAsErrors` enabled, analyzers enabled.
+- `Directory.Build.props`: `Nullable` enabled (its warnings are errors), analyzers enabled; the rules that fail the build are listed in `.editorconfig` (see "Build policy" in `CLAUDE.md`).
 - `Directory.Packages.props`: all NuGet versions pinned in one place.
 - Each project targets `net10.0`.
 
