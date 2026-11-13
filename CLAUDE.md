@@ -16,7 +16,7 @@ scripts/                      build.ps1 (+ LicenseCheck, Checksums, CoverageRepo
 docs/                         design, plan, status, checklists (see "Where to look")
 ```
 
-Conventions (details in `docs/implementation-plan.md` section 1): one type per file, records for data, errors as `Result` values, async with `CancellationToken`, no reflection in tests. Warnings are errors (`TreatWarningsAsErrors`). Commit messages use Conventional Commits: `type(scope): summary`.
+Conventions (details in `docs/implementation-plan.md` section 1): one type per file, records for data, errors as `Result` values, async with `CancellationToken`, no reflection in tests. Build policy: nullable warnings and the analyzer rules listed in `.editorconfig` are errors; every other analyzer rule is a warning, so a new SDK cannot break the build of unchanged code. There is no `TreatWarningsAsErrors`. To make a rule fatal, list it in `.editorconfig` (never a whole category). Commit messages use Conventional Commits: `type(scope): summary`.
 
 ## Commands
 

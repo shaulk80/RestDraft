@@ -1,0 +1,39 @@
+# Build policy: which diagnostics fail the build. Analyzer severities only, no formatting rules.
+#
+# Directory.Build.props does not set TreatWarningsAsErrors. A new .NET SDK brings new analyzer rules (CA2027 broke the
+# Linux build in 2026-11 on code that had not changed), and those rules must show up as warnings, not stop the build.
+# A rule listed here is an error on purpose: it catches a real bug in what this project does, and the code is clean
+# under it. To add a rule, set it here, build, and fix or drop it. Do not set a whole category (for example
+# category-Reliability): that would also catch the rules of the next SDK. Nullable warnings are errors too
+# (WarningsAsErrors in Directory.Build.props).
+root = true
+
+[*.cs]
+# Compiler: unawaited tasks, async methods that do not await, dead code, unused or unassigned members, hidden members
+dotnet_diagnostic.CS4014.severity = error
+dotnet_diagnostic.CS1998.severity = error
+dotnet_diagnostic.CS0162.severity = error
+dotnet_diagnostic.CS0168.severity = error
+dotnet_diagnostic.CS0219.severity = error
+dotnet_diagnostic.CS0169.severity = error
+dotnet_diagnostic.CS0649.severity = error
+dotnet_diagnostic.CS0108.severity = error
+dotnet_diagnostic.CS0114.severity = error
+dotnet_diagnostic.CS0618.severity = error
+dotnet_diagnostic.CS0659.severity = error
+dotnet_diagnostic.CS0661.severity = error
+
+# Async and cancellation
+dotnet_diagnostic.CA2016.severity = error
+dotnet_diagnostic.CA2012.severity = error
+dotnet_diagnostic.CA2008.severity = error
+
+# Exceptions
+dotnet_diagnostic.CA2200.severity = error
+dotnet_diagnostic.CA2201.severity = error
+
+# Cryptography
+dotnet_diagnostic.CA5350.severity = error
+dotnet_diagnostic.CA5351.severity = error
+dotnet_diagnostic.CA5379.severity = error
+dotnet_diagnostic.CA5385.severity = error

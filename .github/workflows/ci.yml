@@ -33,7 +33,7 @@ jobs:
         with:
           dotnet-version: 10.0.x
 
-      # Restore, build with warnings as errors, test with coverage, publish win-x64, and smoke-test the zip.
+      # Restore, build (compiler errors and the rules listed in .editorconfig fail it), test with coverage, publish win-x64, and smoke-test the zip.
       - name: Build, test and publish
         shell: pwsh
         run: ./scripts/build.ps1
@@ -70,7 +70,7 @@ jobs:
           sudo apt-get install -y xvfb libicu74 libfontconfig1 fonts-dejavu-core libx11-6 libice6 libsm6 libxext6 libxrandr2
           libxi6 libxcursor1 libgl1
 
-      # Restore, build with warnings as errors, test with coverage, publish linux-x64, package it as .tar.gz (keeps the
+      # Restore, build (compiler errors and the rules listed in .editorconfig fail it), test with coverage, publish linux-x64, package it as .tar.gz (keeps the
       # executable bit), then extract it and start it under Xvfb.
       - name: Build, test and publish
         shell: pwsh
