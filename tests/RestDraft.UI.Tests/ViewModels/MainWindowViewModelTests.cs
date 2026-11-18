@@ -305,7 +305,7 @@ public class MainWindowViewModelTests
         Assert.That(window.Sidebar.StatusMessage, Is.EqualTo("The settings could not be saved."));
     }
 
-    private MainWindowViewModel CreateWindow(IRequestSender sender, ISettingsService? settings = null, ISettingsDialogs? dialogs = null)
+    private MainWindowViewModel CreateWindow(IRequestSender sender, ISettingsService? settings = null, ISettingsDialogs? dialogs = null, IExchangeDialogs? exchange = null)
     {
         var sidebar = _fixtures.CreateSidebar();
         var history = new HistoryListViewModel(_historyService);
@@ -321,7 +321,8 @@ public class MainWindowViewModelTests
             secrets,
             new WorkspaceLayoutViewModel(settingsService),
             settingsService,
-            dialogs ?? A.Fake<ISettingsDialogs>());
+            dialogs ?? A.Fake<ISettingsDialogs>(),
+            exchange ?? A.Fake<IExchangeDialogs>());
     }
 
     private static RequestDefinition CreateUnsavedDefinition()

@@ -25,7 +25,7 @@ public static class ChildNameRules
         }
 
         var trimmed = name.Trim();
-        if (ChildNames(parent, renamingId).Any(existing => string.Equals(existing, trimmed, StringComparison.OrdinalIgnoreCase)))
+        if (IsTaken(trimmed, ChildNames(parent, renamingId).ToList()))
         {
             return Result.Failure(ResultErrors.Validation($"A folder or request named '{trimmed}' already exists here."));
         }
@@ -35,8 +35,14 @@ public static class ChildNameRules
 
     public static string NextAvailableName(string baseName, Folder parent)
     {
+        return NextAvailableName(baseName, ChildNames(parent, null).ToList());
+    }
+
+    // The name as it is when no other name taken is the same, else with the lowest number from 2 that is free.
+    public static string NextAvailableName(string baseName, IReadOnlyCollection<string> takenNames)
+    {
         var candidate = baseName;
-        for (var suffix = 2; !ValidateChildName(candidate, parent, null).IsSuccess; suffix++)
+        for (var suffix = 2; IsTaken(candidate, takenNames); suffix++)
         {
             candidate = $"{baseName} {suffix}";
         }
@@ -44,9 +50,19 @@ public static class ChildNameRules
         return candidate;
     }
 
+    public static bool IsSameName(string first, string second)
+    {
+        return string.Equals(first.Trim(), second.Trim(), StringComparison.OrdinalIgnoreCase);
+    }
+
     public static string NewFolderName(Folder parent)
     {
         return NextAvailableName(NewFolderBaseName, parent);
+    }
+
+    private static bool IsTaken(string name, IReadOnlyCollection<string> takenNames)
+    {
+        return takenNames.Any(taken => IsSameName(taken, name));
     }
 
     private static IEnumerable<string> ChildNames(Folder parent, Guid? renamingId)

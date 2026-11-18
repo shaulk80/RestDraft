@@ -2,6 +2,8 @@ using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using RestDraft.Application.Abstractions;
+using RestDraft.Application.Exchange;
+using RestDraft.Infrastructure.Exchange.Insomnia;
 using RestDraft.Infrastructure.Http;
 using RestDraft.Infrastructure.Logging;
 using RestDraft.Infrastructure.Persistence;
@@ -45,6 +47,8 @@ public static class InfrastructureServiceCollectionExtensions
         services.AddSingleton<IHttpExecutor, HttpRequestExecutor>();
         services.AddSingleton<IBodyFileStore, BodyFileStore>();
         services.AddSingleton<IFileReader, LocalFileReader>();
+        services.AddSingleton<IFileWriter, LocalFileWriter>();
+        services.AddSingleton<ICollectionFormat, InsomniaV5Format>();
 
         return services;
     }

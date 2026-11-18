@@ -1,0 +1,42 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:RestDraft.UI.ViewModels"
+             xmlns:behaviors="using:RestDraft.UI.Behaviors"
+             x:Class="RestDraft.UI.Views.SelectionTreeView"
+             x:DataType="vm:SelectionTreeViewModel">
+  <!-- The tree of the export window and of the import preview. A check box on every node; Space toggles the selected one,
+       Left and Right collapse and expand it. -->
+  <TreeView x:Name="Tree"
+            ItemsSource="{Binding Roots}"
+            behaviors:InitialFocus.IsTarget="True"
+            AutomationProperties.Name="Items to include">
+    <TreeView.Styles>
+      <Style Selector="TreeViewItem">
+        <Setter Property="IsExpanded" Value="{ReflectionBinding IsExpanded, Mode=TwoWay}" />
+      </Style>
+    </TreeView.Styles>
+    <TreeView.DataTemplates>
+      <TreeDataTemplate DataType="vm:SelectableNodeViewModel" ItemsSource="{Binding Children}">
+        <!-- The check box is only the box. The text is beside it, so a click on the text selects the row and does not
+             toggle the box, and a double-click on the text expands or collapses the node. The box is not focusable: the
+             focus stays on the row, so the keys of the tree work. -->
+        <StackPanel Orientation="Horizontal" Spacing="6" Background="Transparent">
+          <CheckBox IsChecked="{Binding IsChecked, Mode=TwoWay}"
+                    Focusable="False"
+                    MinWidth="0"
+                    VerticalAlignment="Center"
+                    Padding="0"
+                    DoubleTapped="OnCheckBoxDoubleTapped"
+                    AutomationProperties.Name="{Binding Title}" />
+          <TextBlock Text="{Binding MethodText}"
+                     IsVisible="{Binding IsRequest}"
+                     MinWidth="56"
+                     VerticalAlignment="Center"
+                     FontWeight="SemiBold" />
+          <TextBlock Text="{Binding Title}" VerticalAlignment="Center" />
+          <TextBlock Text="{Binding StatusText}" Opacity="0.7" VerticalAlignment="Center" />
+        </StackPanel>
+      </TreeDataTemplate>
+    </TreeView.DataTemplates>
+  </TreeView>
+</UserControl>

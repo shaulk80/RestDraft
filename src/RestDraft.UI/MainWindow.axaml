@@ -42,6 +42,9 @@
         <MenuItem Header="Save _all" Command="{Binding TabStrip.SaveAllCommand}" InputGesture="Ctrl+Shift+S" />
         <MenuItem Header="_Close tab" Command="{Binding TabStrip.CloseSelectedCommand}" InputGesture="Ctrl+F4" />
         <Separator />
+        <MenuItem Header="_Import..." Command="{Binding ImportCommand}" />
+        <MenuItem Header="_Export..." Command="{Binding ExportCommand}" />
+        <Separator />
         <MenuItem Header="Se_ttings..." Command="{Binding SettingsCommand}" />
         <Separator />
         <MenuItem Header="E_xit" Click="OnExitClick" InputGesture="Alt+F4" />
@@ -124,6 +127,8 @@
       <StackPanel Orientation="Horizontal" Spacing="12">
         <TextBlock Classes="error"
                    Text="{Binding Sidebar.StatusMessage}"
+                   AutomationProperties.LiveSetting="Polite" />
+        <TextBlock Text="{Binding Notice}"
                    AutomationProperties.LiveSetting="Polite" />
         <!-- Stored tabs are the only copy of unsaved drafts, so a failure is stated in full and in bold. -->
         <TextBlock Classes="error"

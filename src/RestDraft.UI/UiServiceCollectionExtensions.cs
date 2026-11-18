@@ -16,6 +16,8 @@ public static class UiServiceCollectionExtensions
         services.AddSingleton<IConfirmationDialogs, ConfirmationDialogs>();
         services.AddSingleton<ISaveChangesPrompt, SaveChangesPrompt>();
         services.AddSingleton<ISettingsDialogs, SettingsDialogs>();
+        services.AddSingleton<IExchangeFilePicker, ExchangeFilePicker>();
+        services.AddSingleton<IExchangeDialogs, ExchangeDialogs>();
         services.AddSingleton(new AutosaveScheduler(AutosaveScheduler.DefaultDelay));
         services.AddSingleton<TabStripViewModel>();
         services.AddSingleton<BodyFormatting>();

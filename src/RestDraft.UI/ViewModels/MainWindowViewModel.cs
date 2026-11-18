@@ -13,9 +13,13 @@ public sealed class MainWindowViewModel : ViewModelBase
 
     private readonly ISettingsService _settings;
     private readonly ISettingsDialogs _settingsDialogs;
+    private readonly IExchangeDialogs _exchangeDialogs;
     private readonly AsyncRelayCommand _settingsCommand;
+    private readonly AsyncRelayCommand _importCommand;
+    private readonly AsyncRelayCommand _exportCommand;
     private ThemePreference _theme = AppSettings.Default.Theme;
     private int _sidebarTabIndex;
+    private string _notice = string.Empty;
 
     public MainWindowViewModel(
         CollectionsTreeViewModel sidebar,
@@ -25,7 +29,8 @@ public sealed class MainWindowViewModel : ViewModelBase
         SecretStatusViewModel secrets,
         WorkspaceLayoutViewModel layout,
         ISettingsService settings,
-        ISettingsDialogs settingsDialogs)
+        ISettingsDialogs settingsDialogs,
+        IExchangeDialogs exchangeDialogs)
     {
         Sidebar = sidebar;
         History = history;
@@ -35,7 +40,10 @@ public sealed class MainWindowViewModel : ViewModelBase
         Layout = layout;
         _settings = settings;
         _settingsDialogs = settingsDialogs;
+        _exchangeDialogs = exchangeDialogs;
         _settingsCommand = new AsyncRelayCommand(ShowSettingsAsync, () => true);
+        _importCommand = new AsyncRelayCommand(ImportAsync, () => true);
+        _exportCommand = new AsyncRelayCommand(ExportAsync, () => Sidebar.HasCollections);
         Sidebar.RequestOpenRequested += OnRequestOpenRequested;
         Sidebar.TreeChanged += OnTreeChanged;
         History.RestoreRequested += TabStrip.OpenUnsaved;
@@ -61,6 +69,18 @@ public sealed class MainWindowViewModel : ViewModelBase
     public WorkspaceLayoutViewModel Layout { get; }
 
     public ICommand SettingsCommand => _settingsCommand;
+
+    public ICommand ImportCommand => _importCommand;
+
+    // There is nothing to export before the first collection exists.
+    public ICommand ExportCommand => _exportCommand;
+
+    // What the last import or export did. Failures go to the status of the tree instead, which is shown as an error.
+    public string Notice
+    {
+        get => _notice;
+        private set => SetProperty(ref _notice, value);
+    }
 
     // The tab of the sidebar that is shown: 0 is Collections, 1 is History. Not remembered.
     public int SidebarTabIndex
@@ -140,6 +160,38 @@ public sealed class MainWindowViewModel : ViewModelBase
         await ApplySettingsAsync();
     }
 
+    private async Task ImportAsync()
+    {
+        Notice = string.Empty;
+        var outcome = await _exchangeDialogs.ImportAsync(Sidebar.SelectedCollectionId, CancellationToken.None);
+        await ShowOutcomeAsync(outcome);
+    }
+
+    private async Task ExportAsync()
+    {
+        Notice = string.Empty;
+        var outcome = await _exchangeDialogs.ExportAsync(Sidebar.SelectedCollectionId, CancellationToken.None);
+        await ShowOutcomeAsync(outcome);
+    }
+
+    // The tree is reloaded first, because that clears its message line.
+    private async Task ShowOutcomeAsync(ExchangeOutcome outcome)
+    {
+        if (outcome.Changed)
+        {
+            await Sidebar.ReloadAsync(outcome.CollectionId, outcome.CollectionId);
+            await TabStrip.ReloadLinkedAsync(outcome.OverwrittenRequestIds);
+        }
+
+        if (outcome.IsError)
+        {
+            Sidebar.StatusMessage = outcome.Message;
+            return;
+        }
+
+        Notice = outcome.Message;
+    }
+
     private void ReportFailure(Result result)
     {
         if (!result.IsSuccess)
@@ -170,6 +222,7 @@ public sealed class MainWindowViewModel : ViewModelBase
 
     private void OnTreeChanged(object? sender, EventArgs e)
     {
+        _exportCommand.RaiseCanExecuteChanged();
         TabStrip.SyncWithTree(requestId => Sidebar.FindRequestName(requestId));
     }
 }
