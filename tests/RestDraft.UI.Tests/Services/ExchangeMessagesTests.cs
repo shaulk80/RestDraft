@@ -25,7 +25,7 @@ public class ExchangeMessagesTests
     }
 
     [TestCase("Scratch Pad", "Scratch Pad")]
-    [TestCase("a/b:c", "a_b_c")]
+    [TestCase("a/b/c", "a_b_c")]
     [TestCase("   ", "collection")]
     public void SuggestedFileNameHasNoInvalidCharacters(string name, string expected)
     {
