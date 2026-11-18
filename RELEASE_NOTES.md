@@ -1,5 +1,30 @@
 # Release notes
 
+## 0.3.0 (import and export, a filter popup and a folder package)
+
+Two new features and a change in how the program is packaged. The packages are the same as in 0.2.0: `RestDraft-win-x64.zip`, `RestDraft-linux-x64.tar.gz` and `SHA256SUMS.txt`, built by GitHub Actions from the release tag.
+
+### What changed
+
+- Import and export. File > Import... reads a collection from an Insomnia v5 YAML file and File > Export... writes one. Import shows a preview with a check box on every folder and request, goes into a new or an existing collection, and can overwrite requests that have the same name (they keep their identity, and open tabs of them are reloaded; a tab with unsaved edits asks first). Things RestDraft does not keep (descriptions, scripts, settings, cookies, environments, folder-level headers and authentication, OAuth 2 and other authentication types) are listed as warnings. Insomnia v4 JSON, Postman and OpenAPI are not supported yet.
+- One filter for the Collections tree and the History. The funnel button at the left of the top bar (or Ctrl+F, or Edit > Filter...) opens a popup with text, method and "Search in bodies". Each tab keeps its own filter, and a filter never closes an open tab. The search box and the method list moved off the History tab.
+- The package is now a folder of files instead of a single executable. Each archive holds one folder, `RestDraft-<runtime>/`, with the executable, its DLLs and the native libraries (about 270 files). Nothing is unpacked into `%TEMP%\.net\RestDraft` (Linux: `~/.net/RestDraft`) any more, and the program writes only inside its own folder. The download is about 4 MB (8%) larger: the zip is 52.0 MB against 47.9 MB, the tarball 47.6 MB against 44.0 MB.
+- Internal: a new dependency, YamlDotNet 18.1.0 (MIT licence), for the YAML files.
+
+### Upgrading from 0.2.0 or earlier
+
+Unzip the new package into a new folder, run `RestDraft.exe` from it, and keep the other files next to it. To keep your collections, history and environments, copy the old `data` folder into the new program folder (or point to it with `--data-dir` or `RESTDRAFT_DATA_DIR`). The old `%TEMP%\.net\RestDraft` (Linux: `~/.net/RestDraft`) is no longer used and can be deleted.
+
+### Not signed
+
+The executables are not code-signed. SignPath Foundation declined the application for now, because the project does not yet have enough public visibility, and the project will apply again later. See the README for the SmartScreen and Smart App Control notes (Windows), and verify every download against `SHA256SUMS.txt`. With the folder package, the program's own DLLs are unsigned files too.
+
+### Known limitations
+
+- A file exported from RestDraft has not been opened in Insomnia itself yet. Exported files hold Basic auth passwords and tokens in plain text.
+- The file dialogs of import and export were not checked on Linux.
+- The limitations listed under 0.1.1 (Linux) and 0.1.0 still apply.
+
 ## 0.2.0 (window state, tree icons and a taller body editor)
 
 Small improvements to the window and the request editor. The packages are the same as in 0.1.1: `RestDraft-win-x64.zip`, `RestDraft-linux-x64.tar.gz` and `SHA256SUMS.txt`, built by GitHub Actions from the release tag.
