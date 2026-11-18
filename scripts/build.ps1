@@ -65,6 +65,8 @@ function New-ReleaseZip {
     Add-Type -AssemblyName System.IO.Compression
     Add-Type -AssemblyName System.IO.Compression.FileSystem
     $sourceRoot = (Resolve-Path $SourceDir).Path.TrimEnd('\')
+    # The package holds many files, so they go under one top-level folder named like the source folder.
+    $rootFolderName = Split-Path -Leaf $sourceRoot
     for ($attempt = 1; $attempt -le $MaxAttempts; $attempt++) {
         try {
             if (Test-Path $ZipPath) {
@@ -73,7 +75,7 @@ function New-ReleaseZip {
             $zip = [System.IO.Compression.ZipFile]::Open($ZipPath, 'Create')
             try {
                 Get-ChildItem $sourceRoot -Recurse -File | ForEach-Object {
-                    $entryName = $_.FullName.Substring($sourceRoot.Length + 1).Replace('\', '/')
+                    $entryName = "$rootFolderName/" + $_.FullName.Substring($sourceRoot.Length + 1).Replace('\', '/')
                     [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile($zip, $_.FullName, $entryName) | Out-Null
                 }
             }
@@ -99,9 +101,20 @@ function New-ReleaseTarGz {
 
     # Directories 755, files 644, the program 755: the package carries the executable bit that a Windows-made zip lacks.
     # GNU tar: sorted entries and numeric owner 0 keep the content independent of the build user.
-    Invoke-Native -FilePath 'chmod' -Arguments @('-R', 'u=rwX,go=rX', $SourceDir)
-    Invoke-Native -FilePath 'chmod' -Arguments @('755', (Join-Path $SourceDir 'RestDraft'))
-    Invoke-Native -FilePath 'tar' -Arguments @('--sort=name', '--owner=0', '--group=0', '--numeric-owner', '-czf', $TarGzPath, '-C', $SourceDir, '.')
+    # NuGet extracts its files with the executable bit set, so every file is reset to 644 first.
+    # The program and createdump (the .NET crash dump tool, which the runtime starts as a process) get 755 again.
+    Invoke-Native -FilePath 'find' -Arguments @($SourceDir, '-type', 'd', '-exec', 'chmod', '755', '{}', '+')
+    Invoke-Native -FilePath 'find' -Arguments @($SourceDir, '-type', 'f', '-exec', 'chmod', '644', '{}', '+')
+    foreach ($programName in @('RestDraft', 'createdump')) {
+        $programPath = Join-Path $SourceDir $programName
+        if (Test-Path -LiteralPath $programPath) {
+            Invoke-Native -FilePath 'chmod' -Arguments @('755', $programPath)
+        }
+    }
+    # The files go under one top-level folder named like the source folder (same layout as the Windows zip).
+    $parentDir = Split-Path -Parent $SourceDir
+    $rootFolderName = Split-Path -Leaf $SourceDir
+    Invoke-Native -FilePath 'tar' -Arguments @('--sort=name', '--owner=0', '--group=0', '--numeric-owner', '-czf', $TarGzPath, '-C', $parentDir, $rootFolderName)
 }
 
 function Test-PublishedApp {
@@ -164,14 +177,16 @@ function Test-ReleasePackage {
         [string] $SmokeDir
     )
 
+    # The package holds one top-level folder, RestDraft-<runtime>, and the program runs from inside it.
+    $programDir = Join-Path $SmokeDir "RestDraft-$Runtime"
     if ($Runtime -like 'linux-*') {
         New-Item -ItemType Directory -Path $SmokeDir -Force | Out-Null
         Invoke-Native -FilePath 'tar' -Arguments @('-xzf', $PackagePath, '-C', $SmokeDir)
-        return (Test-PublishedAppOnLinux -PublishDir $SmokeDir)
+        return (Test-PublishedAppOnLinux -PublishDir $programDir)
     }
 
     Expand-Archive -Path $PackagePath -DestinationPath $SmokeDir -Force
-    return (Test-PublishedApp -PublishDir $SmokeDir)
+    return (Test-PublishedApp -PublishDir $programDir)
 }
 
 Invoke-DotNet @('restore', $solution)
@@ -196,7 +211,8 @@ foreach ($runtime in $Runtimes) {
     }
 
     # Clean only this runtime, so a package for another runtime survives.
-    $publishDir = Join-Path $distRoot $runtime
+    # The folder name is also the top-level folder inside the package.
+    $publishDir = Join-Path $distRoot "RestDraft-$runtime"
     $packageExtension = '.zip'
     if ($isLinuxRuntime) {
         $packageExtension = '.tar.gz'
@@ -212,9 +228,9 @@ foreach ($runtime in $Runtimes) {
         'publish', $uiProject,
         '-c', $Configuration,
         '-r', $runtime,
+        # Self-contained (the .NET runtime ships in the package), but not single-file: the program, its assemblies and its
+        # native libraries are separate files, so nothing is unpacked to a temporary folder at run time.
         '--self-contained', 'true',
-        '-p:PublishSingleFile=true',
-        '-p:IncludeNativeLibrariesForSelfExtract=true',
         # Debug symbols are about 100 MB uncompressed and are not needed by users.
         '-p:DebugType=none',
         '-p:DebugSymbols=false',

@@ -28,13 +28,13 @@ RestDraft - a REST API client. A desktop application for Windows and Linux (x64)
    ```
 
    The two hashes must be the same.
-3. Unzip the folder anywhere you can write to, and run `RestDraft.exe`. There is no installer. It needs no .NET installation.
+3. Unzip the file anywhere you can write to. It creates one folder, `RestDraft-win-x64`. Run `RestDraft.exe` from it and keep the other files in that folder next to the executable. There is no installer. It needs no .NET installation.
 
 ### Uninstall
 
 There is no installer, so to uninstall, delete the program folder. It includes the `data` folder, so copy `data` somewhere first if you want to keep your collections, history and environments.
 
-All your data stays in the `data` folder. The one thing the program puts elsewhere is its native libraries (graphics, fonts, SQLite). On the first run it unpacks them into a temporary folder, `%TEMP%\.net\RestDraft`, and a new version unpacks into a new subfolder there. They contain no data of yours. You can delete `%TEMP%\.net\RestDraft` at any time, and the program recreates it when it needs it.
+All your data stays in the `data` folder, and the program writes nothing outside its folder. Versions up to 0.2.0 were a single file and unpacked their native libraries (graphics, fonts, SQLite) into `%TEMP%\.net\RestDraft` on the first run. If you used one of them, you can delete that folder.
 
 ### Windows warnings
 
@@ -54,18 +54,18 @@ Since 0.1.1 the release has a Linux x64 package, `RestDraft-linux-x64.tar.gz`, n
    sudo apt install -y libicu74 libfontconfig1 fonts-dejavu-core libx11-6 libice6 libsm6 libxext6 libxrandr2 libxi6 libxcursor1 libgl1
    ```
 
-3. Extract and run. The archive keeps the executable permission, so no `chmod` is needed:
+3. Extract and run. The archive holds one folder, `RestDraft-linux-x64`, and keeps the executable permission, so no `chmod` is needed:
 
    ```bash
-   mkdir RestDraft && tar -xzf RestDraft-linux-x64.tar.gz -C RestDraft
-   ./RestDraft/RestDraft
+   tar -xzf RestDraft-linux-x64.tar.gz
+   ./RestDraft-linux-x64/RestDraft
    ```
 
 The `data` folder, `--data-dir` and `RESTDRAFT_DATA_DIR` work as described under [Your data](#your-data), with `/` in paths. A startup error is printed in the terminal, because there is no message box on Linux.
 
-To uninstall, delete the program folder (copy `data` first if you want to keep it) and the folder `~/.net/RestDraft`, where the program unpacks its native libraries on the first run.
+To uninstall, delete the program folder (copy `data` first if you want to keep it). Versions up to 0.2.0 also unpacked their native libraries into `~/.net/RestDraft`; delete that folder if it exists.
 
-On WSL2 with WSLg, closing a window or a popup can lag by about a second. This comes from WSLg, not from the program.
+On WSL2 with WSLg, closing a window or a popup can lag by about a second, and the first window after WSL starts can take a minute or more to appear while WSLg connects to Windows. Both come from WSLg, not from the program.
 
 ## Your data
 
@@ -127,7 +127,7 @@ You need the .NET 10 SDK.
 
 The Linux package is built on a Linux host (the CI Linux job does it): `pwsh ./scripts/build.ps1 -Runtimes linux-x64`, which needs `xvfb` for its smoke test. On Windows that runtime is skipped.
 
-The script restores packages, checks the licenses of all dependencies, builds (nullable warnings and the rules listed in `.editorconfig` fail the build; other analyzer findings are warnings), runs the tests and reports coverage (a warning below 80% for the domain and application layers), publishes `win-x64` as a single self-contained file, zips it to `dist/RestDraft-win-x64.zip`, writes `dist/SHA256SUMS.txt`, and starts the unzipped program once to check that it creates its `data` folder. Close the sample API before running it if you started it.
+The script restores packages, checks the licenses of all dependencies, builds (nullable warnings and the rules listed in `.editorconfig` fail the build; other analyzer findings are warnings), runs the tests and reports coverage (a warning below 80% for the domain and application layers), publishes `win-x64` self-contained (the executable, its DLLs and native libraries in one folder, not a single file), zips that folder to `dist/RestDraft-win-x64.zip`, writes `dist/SHA256SUMS.txt`, and starts the unzipped program once to check that it creates its `data` folder. Close the sample API before running it if you started it.
 
 Project layout and design are described in [ARCHITECTURE_PLAN.md](docs/ARCHITECTURE_PLAN.md) and [implementation-plan.md](docs/implementation-plan.md). The current state is in [STATUS.md](docs/STATUS.md).
 

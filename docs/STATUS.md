@@ -1,10 +1,12 @@
 # RestDraft: status
 
-Updated: 2026-11-13. Keep this file short and current. The old milestone log is in `history/implementation-progress-M0-M11.txt`.
+Updated: 2026-11-18. Keep this file short and current. The old milestone log is in `history/implementation-progress-M0-M11.txt`.
 
 ## Now
 
-Version 0.2.0 is the latest published release (2026-11-13; Windows x64 and Linux x64, unsigned). It adds the remembered window state, larger tree icons, a body editor that fills its tab, and the splitter fix (see `RELEASE_NOTES.md`). Nothing is unreleased. All planned milestones (M0 to M11) are done and nothing is in progress. New work starts from a pull request; see `CLAUDE.md` for the workflow.
+Version 0.2.0 is the latest published release (2026-11-13; Windows x64 and Linux x64, unsigned). It adds the remembered window state, larger tree icons, a body editor that fills its tab, and the splitter fix (see `RELEASE_NOTES.md`). All planned milestones (M0 to M11) are done. New work starts from a pull request; see `CLAUDE.md` for the workflow.
+
+**Unreleased (branch `feat/build-exe-with-dlls`, 2026-11-18):** the packages are no longer single-file. Each package holds one folder `RestDraft-<runtime>/` with the executable, about 270 DLLs and native libraries, and nothing is unpacked to `%TEMP%\.net\RestDraft` any more (decision Q13 in `ARCHITECTURE_PLAN.md`). Size: the zip is the same (48.0 MB against 47.9 MB), the tarball is about 4 MiB larger (46 against 42 MiB). The next release notes must say so: users unzip into a new folder, and the old `%TEMP%\.net\RestDraft` can be deleted. Verified on Windows and on Ubuntu 24.04 under WSL2 (build, tests, smoke test, package layout, native libraries loaded from the program folder). Not yet verified: the GitHub Actions run, and Smart App Control or SmartScreen with the DLLs (portability checklist section 3).
 
 ## Releases
 
@@ -36,4 +38,6 @@ v0.1.1 assets: zip `df389225b6bc39757e006cae2ca0f6761f9ce0019e96f7ae1f7f8a3f7d98
 
 - Data stays next to the executable; no installer.
 - Linux packages are `.tar.gz` built on Linux (a zip made on Windows cannot keep the executable bit).
+- The package is a folder of files, not a single exe (2026-11-18, Q13). The checksum covers the zip or tarball. Signing, if it comes, must cover the executable and the project's DLLs.
+- Testing on WSL: a slow first window is WSLg warming up, not the app; see `CLAUDE.md` (Gotchas) and the portability checklist section 5.
 - Linux limitations and the unsigned warnings are in `RELEASE_NOTES.md` and the README.

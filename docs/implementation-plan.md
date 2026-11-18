@@ -451,7 +451,7 @@ These values are proposed here and are easy to change in settings or code. Confi
 
 | Risk | Impact | Mitigation |
 |---|---|---|
-| SQLite native binaries missing from single-file publish | App fails to start on one target | Verify in M0 with the smoke test. Enable self-extract for native libraries if needed. |
+| SQLite native binaries missing from single-file publish | App fails to start on one target | Verify in M0 with the smoke test. Enable self-extract for native libraries if needed. Resolved 2026-11-18: the package is no longer single-file, so the libraries are plain files beside the executable (`ARCHITECTURE_PLAN.md` Q13). |
 | Avalonia or AvaloniaEdit API changes between versions | Rework in UI | Pin versions in M0. Upgrade only between milestones. |
 | Connect timing unavailable for some proxy setups | Missing timing values | Show "n/a" and keep total and TTFB. |
 | Large responses slow the UI | Poor UX | Preview cap, spill to disk, background reading (M1, M4). |
