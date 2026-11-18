@@ -52,27 +52,42 @@ public class HistoryListViewModelTests
         Assert.That(_viewModel.StatusMessage, Is.EqualTo("The history could not be read."));
     }
 
-    [Test]
-    public async Task SearchUsesTrimmedUrlTextAndSelectedMethod()
+    [TestCase(" api ", "Post", true, "api", RequestMethod.Post, true)]
+    [TestCase("", SearchViewModel.AnyMethod, false, "", null, false)]
+    [TestCase("api", SearchViewModel.AnyMethod, false, "api", null, false)]
+    public async Task SearchUsesTheAppliedTextMethodAndBodiesOption(
+        string text, string method, bool inBodies, string expectedText, RequestMethod? expectedMethod, bool expectedInBodies)
     {
-        _viewModel.UrlFilter = " api ";
-        _viewModel.SelectedMethod = nameof(RequestMethod.Post);
+        _viewModel.Search.Text = text;
+        _viewModel.Search.SelectedMethod = method;
+        _viewModel.Search.SearchInBodies = inBodies;
 
-        await _viewModel.ReloadAsync();
+        await _viewModel.Search.ApplyAsync();
 
-        A.CallTo(() => _history.SearchAsync(new HistoryFilter("api", RequestMethod.Post), A<CancellationToken>._))
+        A.CallTo(() => _history.SearchAsync(new HistoryFilter(expectedText, expectedMethod, expectedInBodies), A<CancellationToken>._))
             .MustHaveHappenedOnceExactly();
     }
 
     [Test]
-    public async Task AnyMethodChoiceSearchesWithoutMethodFilter()
+    public async Task TypingWithoutSearchingDoesNotChangeTheList()
     {
-        _viewModel.SelectedMethod = HistoryListViewModel.AnyMethod;
+        _viewModel.Search.Text = "api";
 
         await _viewModel.ReloadAsync();
 
         A.CallTo(() => _history.SearchAsync(new HistoryFilter(string.Empty, null), A<CancellationToken>._))
             .MustHaveHappenedOnceExactly();
+    }
+
+    [TestCase("api", true)]
+    [TestCase("", false)]
+    public async Task EmptyResultIsExplainedOnlyWhileAFilterIsApplied(string text, bool expected)
+    {
+        _viewModel.Search.Text = text;
+
+        await _viewModel.Search.ApplyAsync();
+
+        Assert.That(_viewModel.IsFilteredEmpty, Is.EqualTo(expected));
     }
 
     [Test]

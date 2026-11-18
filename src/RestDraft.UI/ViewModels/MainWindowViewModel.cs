@@ -9,10 +9,13 @@ namespace RestDraft.UI.ViewModels;
 
 public sealed class MainWindowViewModel : ViewModelBase
 {
+    private const int HistoryTabIndex = 1;
+
     private readonly ISettingsService _settings;
     private readonly ISettingsDialogs _settingsDialogs;
     private readonly AsyncRelayCommand _settingsCommand;
     private ThemePreference _theme = AppSettings.Default.Theme;
+    private int _sidebarTabIndex;
 
     public MainWindowViewModel(
         CollectionsTreeViewModel sidebar,
@@ -38,7 +41,12 @@ public sealed class MainWindowViewModel : ViewModelBase
         History.RestoreRequested += TabStrip.OpenUnsaved;
         TabStrip.RequestSent += OnTabRequestSent;
         TabStrip.Linked += OnTabLinked;
+        Sidebar.Search.Applied += OnSearchApplied;
+        History.Search.Applied += OnSearchApplied;
     }
+
+    // The search popup closes when a search has been applied.
+    public event EventHandler? SearchApplied;
 
     public CollectionsTreeViewModel Sidebar { get; }
 
@@ -53,6 +61,22 @@ public sealed class MainWindowViewModel : ViewModelBase
     public WorkspaceLayoutViewModel Layout { get; }
 
     public ICommand SettingsCommand => _settingsCommand;
+
+    // The tab of the sidebar that is shown: 0 is Collections, 1 is History. Not remembered.
+    public int SidebarTabIndex
+    {
+        get => _sidebarTabIndex;
+        set
+        {
+            if (SetProperty(ref _sidebarTabIndex, value))
+            {
+                RaisePropertyChanged(nameof(ActiveSearch));
+            }
+        }
+    }
+
+    // One search popup serves both lists. It edits the search of the tab that is shown.
+    public SearchViewModel ActiveSearch => SidebarTabIndex == HistoryTabIndex ? History.Search : Sidebar.Search;
 
     // The window applies it to the application, because view models know no Avalonia types.
     public ThemePreference Theme
@@ -139,8 +163,13 @@ public sealed class MainWindowViewModel : ViewModelBase
         await Sidebar.ReloadAsync(e.RequestId, e.ExpandId);
     }
 
+    private void OnSearchApplied(object? sender, EventArgs e)
+    {
+        SearchApplied?.Invoke(this, EventArgs.Empty);
+    }
+
     private void OnTreeChanged(object? sender, EventArgs e)
     {
-        TabStrip.SyncWithTree(requestId => Sidebar.FindRequest(requestId)?.Name);
+        TabStrip.SyncWithTree(requestId => Sidebar.FindRequestName(requestId));
     }
 }

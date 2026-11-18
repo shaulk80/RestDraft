@@ -40,6 +40,7 @@ public partial class MainWindowSmokeTests
     private ISettingsService _settings = null!;
     private MainWindowViewModel _viewModel = null!;
     private MainWindow _window = null!;
+    private IReadOnlyList<HistoryEntry> _historyEntries = [];
 
     [TearDown]
     public void TearDown()
@@ -233,11 +234,12 @@ public partial class MainWindowSmokeTests
         Assert.That(((TabItem)details.Items[tabIndex]!).Header, Is.EqualTo(expectedHeader));
     }
 
-    private static IHistoryService CreateHistory()
+    private IHistoryService CreateHistory()
     {
         var history = A.Fake<IHistoryService>();
         A.CallTo(() => history.SearchAsync(A<HistoryFilter>._, A<CancellationToken>._))
-            .Returns(Task.FromResult(Result<IReadOnlyList<HistoryEntry>>.Success([])));
+            .ReturnsLazily((HistoryFilter filter, CancellationToken token) => Task.FromResult(Result<IReadOnlyList<HistoryEntry>>.Success(
+                _historyEntries.Where(entry => entry.Url.Contains(filter.UrlText, StringComparison.OrdinalIgnoreCase)).ToList())));
         return history;
     }
 

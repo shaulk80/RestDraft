@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
@@ -18,6 +19,8 @@ public partial class MainWindow : Window
     private const double ResponseMinWidth = 200;
 
     private readonly TextEditTarget _editTarget = new();
+    private readonly SearchPopupView _searchPopup = new();
+    private readonly Flyout _searchFlyout = new();
     private MainWindowViewModel? _viewModel;
     private bool _tabsStored;
     private Size _normalSize;
@@ -34,6 +37,9 @@ public partial class MainWindow : Window
         AddHandler(KeyUpEvent, OnPreviewKeyUp, RoutingStrategies.Tunnel, handledEventsToo: true);
         AddHandler(GotFocusEvent, OnGotFocus);
         Deactivated += OnDeactivated;
+        _searchFlyout.Content = _searchPopup;
+        _searchFlyout.Placement = PlacementMode.BottomEdgeAlignedLeft;
+        _searchFlyout.Opened += (_, _) => _searchPopup.FocusText();
         Panels.SizeChanged += (_, _) => LimitPanelWidths();
         RequestPanels.SizeChanged += (_, _) => LimitPanelWidths();
     }
@@ -46,6 +52,7 @@ public partial class MainWindow : Window
             _viewModel.PropertyChanged -= OnViewModelChanged;
             _viewModel.Layout.PropertyChanged -= OnLayoutChanged;
             _viewModel.TabStrip.TabOpened -= OnTabOpened;
+            _viewModel.SearchApplied -= OnSearchApplied;
         }
 
         _viewModel = DataContext as MainWindowViewModel;
@@ -54,6 +61,7 @@ public partial class MainWindow : Window
             _viewModel.PropertyChanged += OnViewModelChanged;
             _viewModel.Layout.PropertyChanged += OnLayoutChanged;
             _viewModel.TabStrip.TabOpened += OnTabOpened;
+            _viewModel.SearchApplied += OnSearchApplied;
             ApplyLayout();
         }
     }
@@ -217,6 +225,14 @@ public partial class MainWindow : Window
 
     private void OnPreviewKeyDown(object? sender, KeyEventArgs e)
     {
+        // Taken here too, so a text box or the code editor cannot keep Ctrl+F for itself.
+        if (e.Key == Key.F && e.KeyModifiers == KeyModifiers.Control)
+        {
+            e.Handled = true;
+            ShowSearchPopup();
+            return;
+        }
+
         if (e.Key != Key.Tab || !e.KeyModifiers.HasFlag(KeyModifiers.Control) || _viewModel is not { } viewModel)
         {
             return;
@@ -243,6 +259,41 @@ public partial class MainWindow : Window
     private void OnGotFocus(object? sender, FocusChangedEventArgs e)
     {
         _editTarget.Remember(e.Source);
+    }
+
+    private void OnFilterClick(object? sender, RoutedEventArgs e)
+    {
+        ShowSearchPopup();
+    }
+
+    private void OnFilterMenuClick(object? sender, RoutedEventArgs e)
+    {
+        ShowSearchPopup();
+    }
+
+    // The popup edits the search of the tab that is shown, so it is given that search each time it opens.
+    // It hangs under the filter button. The View menu can hide the bar with the button, and then it hangs under
+    // the main menu, which is always there and at the same left edge.
+    private void ShowSearchPopup()
+    {
+        if (_viewModel is not { } viewModel)
+        {
+            return;
+        }
+
+        if (_searchFlyout.IsOpen)
+        {
+            _searchPopup.FocusText();
+            return;
+        }
+
+        _searchPopup.DataContext = viewModel.ActiveSearch;
+        _searchFlyout.ShowAt(FilterButton.IsEffectivelyVisible ? FilterButton : MainMenu);
+    }
+
+    private void OnSearchApplied(object? sender, EventArgs e)
+    {
+        _searchFlyout.Hide();
     }
 
     private void OnExitClick(object? sender, RoutedEventArgs e)
