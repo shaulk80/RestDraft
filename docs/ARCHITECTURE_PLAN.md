@@ -69,7 +69,7 @@ The app is a single program, so one language covers the whole application.
 
 | Option | Ease of use | Performance | OSS ecosystem | Portability / footprint | Editor support |
 |---|---|---|---|---|---|
-| **A. C# / .NET 10 LTS + Avalonia UI** | High | High | High (NuGet; Avalonia is MIT) | High: single-file, self-contained executable per target | High: AvaloniaEdit (MIT) with TextMateSharp grammars |
+| **A. C# / .NET 10 LTS + Avalonia UI** | High | High | High (NuGet; Avalonia is MIT) | High: self-contained package per target (single-file until 2026-11-18, see Q13) | High: AvaloniaEdit (MIT) with TextMateSharp grammars |
 | B. Rust + Tauri (web UI in a system WebView) | Medium: Rust learning curve, UI in web tech | High | High (crates, npm) | High: small binaries. The WebView differs per OS | High: Monaco in the web UI |
 | C. TypeScript + Electron | High | Medium: ships Chromium, high memory use | Very high | Low: 100+ MB per build | High: Monaco |
 | D. Kotlin + Compose Multiplatform (desktop) | Medium to high | High | High (Maven) | Medium: bundles a JVM runtime | Lower: fewer mature code-editor options; needs evaluation |
@@ -81,11 +81,11 @@ The app is a single program, so one language covers the whole application.
 
 ### 3.2 Portability Strategy
 
-- Build one native executable per target: `win-x64` and `linux-x64`. Package each as a zip. No installer (Q2).
+- Build one self-contained package per target: `win-x64` (zip) and `linux-x64` (tar.gz, which keeps the executable bit). No installer (Q2).
 - No registry writes. No admin rights needed.
 - Data folder: `./data/` next to the executable, created on first run. An optional `--data-dir` argument or environment variable overrides it, so the app can run from a read-only location.
 - The whole state (settings, collections, history) is one SQLite file in the data folder. Copying the folder moves all state.
-- Build mechanism for Option A: self-contained single-file publish per runtime identifier.
+- Build mechanism for Option A: self-contained publish per runtime identifier, not single-file (Q13; it was single-file up to 0.2.0).
 - Signing: apply to SignPath Foundation's free open-source program before the first public release (Q7). Internal builds are unsigned until then.
 
 ### 3.3 Storage (Decided: single SQLite database)
@@ -99,7 +99,7 @@ All state lives in one SQLite file, `data/app.db`, accessed through Microsoft.Da
 - **Writes:** each user action is one transaction, so atomic-file handling is not needed.
 - **Schema versioning:** `PRAGMA user_version` with migrations written as code, applied at startup.
 - **Secrets (Q5):** secret values are encrypted with AES-GCM (System.Security.Cryptography, built into .NET). The key is derived from the master password with PBKDF2 (built into .NET) and held in memory only while the app is unlocked.
-- **Risk to verify in M0:** SQLite native binaries must survive the single-file publish on both targets. The portability smoke test covers this.
+- **Risk to verify in M0:** SQLite native binaries must survive the single-file publish on both targets. The portability smoke test covers this. Resolved differently on 2026-11-18: the package is no longer single-file, so the native libraries are plain files beside the executable (Q13).
 
 ## 4. Architecture Overview
 
@@ -178,7 +178,7 @@ Rules:
 | # | Question | Decision | Status |
 |---|---|---|---|
 | Q1 | Stack | C# / .NET 10 LTS with Avalonia UI (Option A). | Decided |
-| Q2 | Portability | Single executable plus data folder beside it, distributed as a zip. No installer. | Decided |
+| Q2 | Portability | One program folder (executable, DLLs and native libraries) with the data folder inside it, distributed as a zip (Windows) or tar.gz (Linux). No installer. Changed 2026-11-18 from a single executable: see Q13. | Decided |
 | Q3 | Storage | Single SQLite database. Sharing collections is not a requirement. | Decided |
 | Q4 | Postman import/export | Not related to this project. Out of scope. | Decided |
 | Q5 | Secrets | Encrypted at rest with a master password, using AES-GCM and PBKDF2. | Decided |
@@ -189,6 +189,7 @@ Rules:
 | Q10 | Application license | Apache-2.0. Full text in `LICENSE`, attribution in `NOTICE`. OSI-approved, so eligible for SignPath (Q7). All planned dependencies are permissive; a license check runs in CI from M0. | Decided |
 | Q11 | Target OS versions | Windows 10 22H2+ and Windows 11, Ubuntu 22.04+ and equivalent. macOS is out of scope. | Decided |
 | Q12 | Weighting of selection criteria | Irrelevant now that Q1 is decided. | Resolved |
+| Q13 | Package layout | Self-contained publish **without** single-file (decided 2026-11-18, from the release after 0.2.0 on). The package holds one top-level folder `RestDraft-<runtime>/`. Reason: the single-file exe still had to unpack its native libraries (Skia, HarfBuzz, SQLite) to `%TEMP%\.net\RestDraft` on the first run, so it was never a pure single file and wrote outside the data folder. Cost: about 270 files per package instead of one, signing must cover many files (see Q7), and one hash covers the package, not the executable. Size: the zip is unchanged (48.0 MB against 47.9 MB), the Linux tarball is about 4 MiB larger (46 against 42 MiB). Checked: Windows and Linux builds, tests and smoke tests, native libraries loaded from the program folder, nothing created in the temp folder. | Decided |
 
 ### 6.1 Q8 Explained
 
