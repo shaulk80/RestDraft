@@ -1,5 +1,6 @@
 using RestDraft.Application.Abstractions;
 using RestDraft.Application.Requests;
+using RestDraft.Application.Search;
 using RestDraft.Domain.Collections;
 using RestDraft.Domain.History;
 using RestDraft.Domain.Results;
@@ -47,9 +48,25 @@ public sealed class HistoryService : IHistoryService, IDisposable
         }
     }
 
-    public Task<Result<IReadOnlyList<HistoryEntry>>> SearchAsync(HistoryFilter filter, CancellationToken cancellationToken)
+    // The repository finds URLs. A body is not a column, so a search in bodies reads the entries of the method
+    // and looks at the stored requests here.
+    public async Task<Result<IReadOnlyList<HistoryEntry>>> SearchAsync(HistoryFilter filter, CancellationToken cancellationToken)
     {
-        return _repository.SearchAsync(filter, cancellationToken);
+        if (!filter.InBodies || filter.UrlText.Length == 0)
+        {
+            return await _repository.SearchAsync(filter, cancellationToken);
+        }
+
+        var entries = await _repository.SearchAsync(filter with { UrlText = string.Empty, InBodies = false }, cancellationToken);
+        if (!entries.IsSuccess)
+        {
+            return entries;
+        }
+
+        var found = entries.Value!
+            .Where(entry => RequestMatcher.Contains(entry.Url, filter.UrlText) || RequestMatcher.BodyContains(entry.RequestSnapshot.Body, filter.UrlText))
+            .ToList();
+        return Result<IReadOnlyList<HistoryEntry>>.Success(found);
     }
 
     // Returns an unsaved definition. It gets a new identifier, so it cannot be mistaken for the saved request it came from.

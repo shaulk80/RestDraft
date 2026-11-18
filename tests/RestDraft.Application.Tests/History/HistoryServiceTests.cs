@@ -3,6 +3,7 @@ using NUnit.Framework;
 using RestDraft.Application.Abstractions;
 using RestDraft.Application.History;
 using RestDraft.Application.Requests;
+using RestDraft.Domain.Bodies;
 using RestDraft.Domain.Collections;
 using RestDraft.Domain.History;
 using RestDraft.Domain.Responses;
@@ -116,6 +117,49 @@ public class HistoryServiceTests
         await _service.SearchAsync(filter, CancellationToken.None);
 
         A.CallTo(() => _repository.SearchAsync(filter, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
+    }
+
+    // A body is not a column, so a search in bodies reads the entries of the method and looks at the stored requests.
+    [TestCase("login", "https://example.com/login")]
+    [TestCase("hunter2", "https://example.com/other")]
+    [TestCase("nothing", null)]
+    public async Task SearchInBodiesFindsEntriesByUrlOrBody(string text, string? expectedUrl)
+    {
+        var byUrl = HistoryFixtures.Entry(Now) with { Url = "https://example.com/login" };
+        var byBody = HistoryFixtures.Entry(Now) with
+        {
+            Url = "https://example.com/other",
+            RequestSnapshot = new RequestDefinition { Id = Guid.NewGuid(), Body = new RawBody("text/plain", "my hunter2") },
+        };
+        var neither = HistoryFixtures.Entry(Now) with { Url = "https://example.com/neither" };
+        A.CallTo(() => _repository.SearchAsync(new HistoryFilter(string.Empty, RequestMethod.Get), A<CancellationToken>._))
+            .Returns(Task.FromResult(Result<IReadOnlyList<HistoryEntry>>.Success([byUrl, byBody, neither])));
+
+        var result = await _service.SearchAsync(new HistoryFilter(text, RequestMethod.Get, InBodies: true), CancellationToken.None);
+
+        Assert.That(result.Value!.Select(entry => entry.Url), Is.EqualTo(expectedUrl is null ? Array.Empty<string>() : [expectedUrl]));
+    }
+
+    [Test]
+    public async Task SearchInBodiesWithoutTextAsksTheRepositoryDirectly()
+    {
+        var filter = new HistoryFilter(string.Empty, null, InBodies: true);
+
+        await _service.SearchAsync(filter, CancellationToken.None);
+
+        A.CallTo(() => _repository.SearchAsync(filter, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
+    }
+
+    [Test]
+    public async Task SearchInBodiesReportsTheFailureOfTheRepository()
+    {
+        A.CallTo(() => _repository.SearchAsync(A<HistoryFilter>._, A<CancellationToken>._))
+            .Returns(Task.FromResult(Result<IReadOnlyList<HistoryEntry>>.Failure(new Error(ErrorCategory.Storage, "The history could not be read."))));
+
+        var result = await _service.SearchAsync(new HistoryFilter("api", null, InBodies: true), CancellationToken.None);
+
+        Assert.That(result.IsSuccess, Is.False);
+        Assert.That(result.Error?.Message, Is.EqualTo("The history could not be read."));
     }
 
     [Test]
