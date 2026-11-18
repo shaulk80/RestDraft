@@ -8,6 +8,8 @@ Version 0.2.0 is the latest published release (2026-11-13; Windows x64 and Linux
 
 **Unreleased (branch `feat/build-exe-with-dlls`, 2026-11-18):** the packages are no longer single-file. Each package holds one folder `RestDraft-<runtime>/` with the executable, about 270 DLLs and native libraries, and nothing is unpacked to `%TEMP%\.net\RestDraft` any more (decision Q13 in `ARCHITECTURE_PLAN.md`). Size (CI build of `main`, 2026-11-18): the zip is 52.0 MB against 47.9 MB for 0.2.0, the tarball 47.6 MB against 44.0 MB, so each is about 4 MB (8%) larger. The next release notes must say so: users unzip into a new folder, and the old `%TEMP%\.net\RestDraft` can be deleted. Verified on Windows and on Ubuntu 24.04 under WSL2 (build, tests, smoke test, package layout, native libraries loaded from the program folder). Not yet verified: the GitHub Actions run, and Smart App Control or SmartScreen with the DLLs (portability checklist section 3).
 
+**Unreleased (branch `feat/common-search`, 2026-11-18):** one filter popup for both sidebar tabs. A funnel button at the left of the top bar opens it (text, method, "Search in bodies"); it filters the tree or the history, whichever tab is shown, and each tab keeps its own filter. The search box and method list moved off the History tab (Restore stays). The tree is pruned from a copy, and open tabs are matched against all requests, so a filter never closes a tab. The popup has a Clear button (disabled while no filter is applied). Ctrl+F (also Edit > Filter...) opens it from anywhere, including when the top bar is hidden from the View menu; then it hangs under the main menu. Not yet verified: Linux.
+
 ## Releases
 
 | Version | Date | Assets | Notes |

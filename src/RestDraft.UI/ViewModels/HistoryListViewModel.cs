@@ -11,20 +11,16 @@ namespace RestDraft.UI.ViewModels;
 
 public sealed class HistoryListViewModel : ViewModelBase
 {
-    public const string AnyMethod = "Any method";
-
     private readonly IHistoryService _history;
-    private readonly AsyncRelayCommand _searchCommand;
     private readonly AsyncRelayCommand _restoreCommand;
     private HistoryItemViewModel? _selectedItem;
-    private string _urlFilter = string.Empty;
-    private string _selectedMethod = AnyMethod;
     private string _statusMessage = string.Empty;
+    private bool _isFilteredEmpty;
 
     public HistoryListViewModel(IHistoryService history)
     {
         _history = history;
-        _searchCommand = new AsyncRelayCommand(ReloadAsync, () => true);
+        Search = new SearchViewModel(ReloadAsync);
         _restoreCommand = new AsyncRelayCommand(RestoreAsync, () => SelectedItem is not null);
     }
 
@@ -33,7 +29,8 @@ public sealed class HistoryListViewModel : ViewModelBase
 
     public ObservableCollection<HistoryItemViewModel> Items { get; } = [];
 
-    public IReadOnlyList<string> MethodChoices { get; } = [AnyMethod, .. Enum.GetNames<RequestMethod>()];
+    // The search popup edits this. The history lists what the applied filter finds.
+    public SearchViewModel Search { get; }
 
     public HistoryItemViewModel? SelectedItem
     {
@@ -47,25 +44,18 @@ public sealed class HistoryListViewModel : ViewModelBase
         }
     }
 
-    public string UrlFilter
-    {
-        get => _urlFilter;
-        set => SetProperty(ref _urlFilter, value);
-    }
-
-    public string SelectedMethod
-    {
-        get => _selectedMethod;
-        set => SetProperty(ref _selectedMethod, value);
-    }
-
     public string StatusMessage
     {
         get => _statusMessage;
         private set => SetProperty(ref _statusMessage, value);
     }
 
-    public ICommand SearchCommand => _searchCommand;
+    // True when a filter is applied and finds nothing, so the empty list can say why.
+    public bool IsFilteredEmpty
+    {
+        get => _isFilteredEmpty;
+        private set => SetProperty(ref _isFilteredEmpty, value);
+    }
 
     public ICommand RestoreCommand => _restoreCommand;
 
@@ -85,6 +75,7 @@ public sealed class HistoryListViewModel : ViewModelBase
         }
 
         SelectedItem = null;
+        IsFilteredEmpty = Search.IsActive && Items.Count == 0;
         StatusMessage = string.Empty;
     }
 
@@ -109,7 +100,7 @@ public sealed class HistoryListViewModel : ViewModelBase
 
     private HistoryFilter CreateFilter()
     {
-        var method = SelectedMethod == AnyMethod ? (RequestMethod?)null : Enum.Parse<RequestMethod>(SelectedMethod);
-        return new HistoryFilter(UrlFilter.Trim(), method);
+        var filter = Search.Filter;
+        return new HistoryFilter(filter.Text, filter.Method, filter.InBodies);
     }
 }

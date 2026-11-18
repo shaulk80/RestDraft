@@ -1,0 +1,32 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:RestDraft.UI.ViewModels"
+             x:Class="RestDraft.UI.Views.SearchPopupView"
+             x:DataType="vm:SearchViewModel"
+             Width="300">
+  <!-- The same box serves the Collections tree and the History. The window gives it the search of the tab that is shown. -->
+  <StackPanel Margin="4" Spacing="8">
+    <TextBox x:Name="TextBox"
+             Text="{Binding Text}"
+             PlaceholderText="Search"
+             AutomationProperties.Name="Search text">
+      <TextBox.KeyBindings>
+        <KeyBinding Gesture="Enter" Command="{Binding SearchCommand}" />
+      </TextBox.KeyBindings>
+    </TextBox>
+    <ComboBox HorizontalAlignment="Stretch"
+              ItemsSource="{Binding MethodChoices}"
+              SelectedItem="{Binding SelectedMethod}"
+              AutomationProperties.Name="Filter by method" />
+    <CheckBox Content="Search in bodies"
+              IsChecked="{Binding SearchInBodies}" />
+    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+      <!-- Disabled, not hidden, while no filter is applied, so the popup keeps its size. -->
+      <Button Content="Clear"
+              Command="{Binding ClearCommand}"
+              AutomationProperties.HelpText="Removes the filter and shows everything again" />
+      <Button Content="Search"
+              Command="{Binding SearchCommand}" />
+    </StackPanel>
+  </StackPanel>
+</UserControl>

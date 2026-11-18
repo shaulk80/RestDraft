@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Windows.Input;
 using RestDraft.Application.Collections;
+using RestDraft.Application.Search;
 using RestDraft.Domain.Collections;
 using RestDraft.Domain.Results;
 using RestDraft.UI.Commands;
@@ -24,6 +25,9 @@ public sealed class CollectionsTreeViewModel : ViewModelBase
     private readonly AsyncRelayCommand _deleteSelectedCommand;
     private readonly RelayCommand _openSelectedCommand;
     private HashSet<Guid> _expandedIds = [];
+    private IReadOnlyList<Collection> _allCollections = [];
+    private bool _isShownFiltered;
+    private bool _isFilteredEmpty;
     private TreeNodeViewModel? _selectedNode;
     private string _statusMessage = string.Empty;
 
@@ -39,6 +43,7 @@ public sealed class CollectionsTreeViewModel : ViewModelBase
         _requests = requests;
         _tree = tree;
         _confirmations = confirmations;
+        Search = new SearchViewModel(ApplySearchAsync);
         _newCollectionCommand = new AsyncRelayCommand(CreateCollectionAsync, () => true);
         _newFolderCommand = new AsyncRelayCommand(CreateFolderInSelectedAsync, () => SelectedNode is not null);
         _newRequestCommand = new AsyncRelayCommand(CreateRequestInSelectedAsync, () => SelectedNode is not null);
@@ -52,6 +57,16 @@ public sealed class CollectionsTreeViewModel : ViewModelBase
     public event EventHandler? TreeChanged;
 
     public ObservableCollection<CollectionNodeViewModel> Roots { get; } = [];
+
+    // The search popup edits this. The tree shows what the applied filter finds.
+    public SearchViewModel Search { get; }
+
+    // True when a filter is applied and finds nothing, so the empty tree can say why.
+    public bool IsFilteredEmpty
+    {
+        get => _isFilteredEmpty;
+        private set => SetProperty(ref _isFilteredEmpty, value);
+    }
 
     public TreeNodeViewModel? SelectedNode
     {
@@ -89,19 +104,44 @@ public sealed class CollectionsTreeViewModel : ViewModelBase
 
     public ICommand OpenSelectedCommand => _openSelectedCommand;
 
+    // While a filter is applied every node is open, so the matches can be seen. The open nodes the user chose are kept
+    // aside and come back when the filter is cleared.
     public bool WasExpanded(Guid id)
     {
-        return _expandedIds.Contains(id);
+        return Search.IsActive || _expandedIds.Contains(id);
     }
 
+    // A node that is shown. A request the filter hides has none.
     public RequestNodeViewModel? FindRequest(Guid requestId)
     {
         return AllNodes().OfType<RequestNodeViewModel>().FirstOrDefault(node => node.Id == requestId);
     }
 
-    public async Task ReloadAsync(Guid? selectId = null, Guid? expandId = null)
+    // The tree shows only what the filter finds, so the open tabs are matched against all requests, not the shown ones.
+    public string? FindRequestName(Guid requestId)
     {
-        _expandedIds = AllNodes().Where(node => node.IsExpanded).Select(node => node.Id).ToHashSet();
+        return CollectionSet.FindRequest(_allCollections, requestId)?.Name;
+    }
+
+    // The selected node is kept after the reload, and kept visible even if the filter does not match it. That is what
+    // the user has just created, renamed or saved.
+    public Task ReloadAsync(Guid? selectId = null, Guid? expandId = null)
+    {
+        return LoadAsync(selectId, expandId, selectId);
+    }
+
+    private Task ApplySearchAsync()
+    {
+        return LoadAsync(SelectedNode?.Id, null, null);
+    }
+
+    private async Task LoadAsync(Guid? selectId, Guid? expandId, Guid? keepVisibleId)
+    {
+        if (!_isShownFiltered)
+        {
+            _expandedIds = AllNodes().Where(node => node.IsExpanded).Select(node => node.Id).ToHashSet();
+        }
+
         if (expandId is { } parentId)
         {
             _expandedIds.Add(parentId);
@@ -114,12 +154,15 @@ public sealed class CollectionsTreeViewModel : ViewModelBase
             return;
         }
 
+        _allCollections = loaded.Value!;
         Roots.Clear();
-        foreach (var collection in loaded.Value!)
+        foreach (var collection in CollectionSearch.Apply(_allCollections, Search.Filter, keepVisibleId))
         {
             Roots.Add(new CollectionNodeViewModel(this, collection));
         }
 
+        _isShownFiltered = Search.IsActive;
+        IsFilteredEmpty = Search.IsActive && Roots.Count == 0;
         SelectedNode = selectId is { } id ? AllNodes().FirstOrDefault(node => node.Id == id) : null;
         StatusMessage = string.Empty;
         TreeChanged?.Invoke(this, EventArgs.Empty);

@@ -8,6 +8,7 @@ RestDraft - a REST API client. A desktop application for Windows and Linux (x64)
 - Authorization: Basic, Bearer token, and API key (in a header or in the query).
 - Responses show status, timing, size, headers, and a body that can be viewed pretty-printed or raw. Large bodies are kept on disk, and the first 1 MB is shown.
 - Collections with folders and subfolders. Drag and drop to move items.
+- Filter for the Collections tree and for the History, from the funnel button at the left of the top bar: text (names and URLs), method, and optionally the request bodies. Each tab keeps its own filter, and the funnel is filled while one is applied.
 - History of every request that was sent, with search and restore. History keeps the URL as you typed it, with `{{placeholders}}`, so secret values never reach it.
 - Environments with `{{variables}}`. Variables can be marked secret. Secrets are encrypted with a master password. In the Environments window the names are edited in the list, and one environment is marked as the current one.
 - Several request tabs. Open tabs and unsaved edits come back after a restart.
@@ -107,6 +108,7 @@ This program will not transfer any information to other networked systems unless
 | Ctrl+Shift+S | Save all changed tabs. A tab that is not in a collection yet asks for a folder and a name. Cancel stops the rest |
 | Ctrl+T | Open a new tab |
 | Ctrl+F4 | Close the active tab |
+| Ctrl+F | Open the filter popup of the Collections or History tab, whichever is shown, even when the bar at the top is hidden |
 | Ctrl+Tab / Ctrl+Shift+Tab | Switch the request tabs in the order they were last used. Keep Ctrl down to go further back. Other tabs (Collections, History, Body, Params, and so on) are not affected |
 | F2 / Delete / Enter | In the Collections tree: rename, delete, or open the selected item |
 | Shift+F10 or the Menu key | In the Collections tree: open the context menu. Esc closes it |

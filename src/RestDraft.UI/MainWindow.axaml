@@ -33,9 +33,9 @@
       <Setter Property="FontSize" Value="12" />
     </Style>
   </Window.Styles>
-  <!-- Menu on top, then the thin bar with the environment and secrets, the panels, and the message line. -->
+  <!-- Menu on top, then the thin bar with the filter, the environment and secrets, the panels, and the message line. -->
   <DockPanel>
-    <Menu DockPanel.Dock="Top" AutomationProperties.Name="Main menu">
+    <Menu x:Name="MainMenu" DockPanel.Dock="Top" AutomationProperties.Name="Main menu">
       <MenuItem Header="_File">
         <MenuItem Header="_New request" Command="{Binding TabStrip.NewTabCommand}" InputGesture="Ctrl+T" />
         <MenuItem Header="_Save" Command="{Binding TabStrip.SaveSelectedCommand}" InputGesture="Ctrl+S" />
@@ -47,6 +47,8 @@
         <MenuItem Header="E_xit" Click="OnExitClick" InputGesture="Alt+F4" />
       </MenuItem>
       <MenuItem Header="_Edit">
+        <MenuItem Header="_Filter..." Click="OnFilterMenuClick" InputGesture="Ctrl+F" />
+        <Separator />
         <MenuItem Header="Cu_t" Click="OnCutClick" InputGesture="Ctrl+X" />
         <MenuItem Header="_Copy" Click="OnCopyClick" InputGesture="Ctrl+C" />
         <MenuItem Header="_Paste" Click="OnPasteClick" InputGesture="Ctrl+V" />
@@ -76,27 +78,42 @@
             BorderThickness="0,1,0,1"
             Padding="8,2"
             IsVisible="{Binding Layout.IsTopBarVisible}">
-      <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
-        <TextBlock VerticalAlignment="Center" Text="{Binding Secrets.Text}" />
-        <Button Content="{Binding Secrets.ButtonText}"
-                Command="{Binding Secrets.ToggleCommand}"
-                AutomationProperties.HelpText="Locks or unlocks the secret variables" />
-        <TextBlock VerticalAlignment="Center" Text="Environment" />
-        <ComboBox MinWidth="160"
-                  ItemsSource="{Binding Environments.Choices}"
-                  SelectedItem="{Binding Environments.SelectedChoice, Mode=OneWay}"
-                  AutomationProperties.Name="Active environment"
-                  SelectionChanged="OnEnvironmentSelectionChanged">
-          <ComboBox.ItemTemplate>
-            <DataTemplate x:DataType="vm:EnvironmentChoice">
-              <TextBlock Text="{Binding Name}" />
-            </DataTemplate>
-          </ComboBox.ItemTemplate>
-        </ComboBox>
-        <Button Content="Manage"
-                Command="{Binding Environments.ManageCommand}"
-                AutomationProperties.Name="Manage environments" />
-      </StackPanel>
+      <DockPanel>
+        <!-- Filters the tab of the sidebar that is shown. The icon is filled while a filter is applied. -->
+        <Button x:Name="FilterButton"
+                DockPanel.Dock="Left"
+                Classes="tool"
+                Classes.active="{Binding ActiveSearch.IsActive}"
+                Padding="6,1"
+                MinHeight="22"
+                Click="OnFilterClick"
+                ToolTip.Tip="{Binding ActiveSearch.Summary}"
+                AutomationProperties.Name="Filter"
+                AutomationProperties.HelpText="Filters the Collections or the History, whichever is shown">
+          <Path Data="{DynamicResource FilterIconData}" />
+        </Button>
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+          <TextBlock VerticalAlignment="Center" Text="{Binding Secrets.Text}" />
+          <Button Content="{Binding Secrets.ButtonText}"
+                  Command="{Binding Secrets.ToggleCommand}"
+                  AutomationProperties.HelpText="Locks or unlocks the secret variables" />
+          <TextBlock VerticalAlignment="Center" Text="Environment" />
+          <ComboBox MinWidth="160"
+                    ItemsSource="{Binding Environments.Choices}"
+                    SelectedItem="{Binding Environments.SelectedChoice, Mode=OneWay}"
+                    AutomationProperties.Name="Active environment"
+                    SelectionChanged="OnEnvironmentSelectionChanged">
+            <ComboBox.ItemTemplate>
+              <DataTemplate x:DataType="vm:EnvironmentChoice">
+                <TextBlock Text="{Binding Name}" />
+              </DataTemplate>
+            </ComboBox.ItemTemplate>
+          </ComboBox>
+          <Button Content="Manage"
+                  Command="{Binding Environments.ManageCommand}"
+                  AutomationProperties.Name="Manage environments" />
+        </StackPanel>
+      </DockPanel>
     </Border>
     <!-- Only messages live here: the status of the tree, and the failure to store the open tabs. -->
     <Border DockPanel.Dock="Bottom"
@@ -120,6 +137,7 @@
          the outer two, and the request takes what is left. -->
     <Grid x:Name="Panels" Margin="4" ColumnDefinitions="260,Auto,*">
       <TabControl Grid.Column="0"
+                  SelectedIndex="{Binding SidebarTabIndex, Mode=TwoWay}"
                   IsVisible="{Binding Layout.IsSidebarVisible}"
                   AutomationProperties.Name="Sidebar">
         <TabItem Header="Collections">

@@ -80,6 +80,71 @@ public class MainWindowViewModelTests
         Assert.That(_window.TabStrip.SelectedTab, Is.Null);
     }
 
+    // A search hides requests from the tree. It must not close the tabs of the hidden ones, unsaved edits included.
+    [Test]
+    public async Task SearchThatHidesARequestKeepsItsTabOpen()
+    {
+        await _window.OpenRequestAsync(_fixtures.Login.Id);
+        _window.Sidebar.Search.Text = "nothing like it";
+
+        await _window.Sidebar.Search.ApplyAsync();
+
+        Assert.That(_window.Sidebar.Roots, Is.Empty);
+        Assert.That(_window.TabStrip.Tabs, Has.Count.EqualTo(1));
+        Assert.That(_window.TabStrip.SelectedTab?.RequestId, Is.EqualTo(_fixtures.Login.Id));
+    }
+
+    [Test]
+    public async Task TabNameFollowsARenameEvenWhileTheSearchHidesTheRequest()
+    {
+        await _window.OpenRequestAsync(_fixtures.Login.Id);
+        _window.Sidebar.Search.Text = "nothing like it";
+        await _window.Sidebar.Search.ApplyAsync();
+        var renamed = _fixtures.Login with { Name = "Sign in" };
+        _fixtures.SetCollections([_fixtures.Shop with { Root = _fixtures.Root with { Folders = [_fixtures.Users with { Requests = [renamed] }] } }]);
+
+        await _window.Sidebar.ReloadAsync();
+
+        Assert.That(_window.TabStrip.Tabs[0].Name, Is.EqualTo("Sign in"));
+    }
+
+    [TestCase(0, true)]
+    [TestCase(1, false)]
+    public void SearchPopupEditsTheSearchOfTheShownTab(int tabIndex, bool isTree)
+    {
+        var raised = new List<string?>();
+        _window.PropertyChanged += (_, e) => raised.Add(e.PropertyName);
+
+        _window.SidebarTabIndex = tabIndex;
+
+        Assert.That(_window.ActiveSearch, Is.SameAs(isTree ? _window.Sidebar.Search : _window.History.Search));
+        Assert.That(raised.Contains(nameof(MainWindowViewModel.ActiveSearch)), Is.EqualTo(tabIndex != 0));
+    }
+
+    [Test]
+    public async Task EachTabKeepsItsOwnSearch()
+    {
+        _window.Sidebar.Search.Text = "login";
+        await _window.Sidebar.Search.ApplyAsync();
+
+        Assert.That(_window.History.Search.IsActive, Is.False);
+        Assert.That(_window.Sidebar.Search.IsActive, Is.True);
+    }
+
+    [Test]
+    public async Task SearchAppliedIsRaisedForBothTabs()
+    {
+        A.CallTo(() => _historyService.SearchAsync(A<HistoryFilter>._, A<CancellationToken>._))
+            .Returns(Task.FromResult(Result<IReadOnlyList<HistoryEntry>>.Success([])));
+        var raised = 0;
+        _window.SearchApplied += (_, _) => raised++;
+
+        await _window.Sidebar.Search.ApplyAsync();
+        await _window.History.Search.ApplyAsync();
+
+        Assert.That(raised, Is.EqualTo(2));
+    }
+
     [Test]
     public async Task TreeReloadKeepsUnsavedTab()
     {
