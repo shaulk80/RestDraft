@@ -12,9 +12,9 @@ Machine: ______________________  Windows version: ______________  Date: ________
 | # | Step | Expected | Result |
 |---|---|---|---|
 | 1 | Compare the zip hash with `SHA256SUMS.txt` | Hashes are equal | |
-| 2 | Unzip into a new folder that is not the repository, for example `C:\Temp\RestDraftCheck` | `RestDraft.exe` and `MigrationScripts\` exist; no `.pdb` files | |
+| 2 | Unzip into a new folder that is not the repository, for example `C:\Temp\RestDraftCheck` | One folder `RestDraft-win-x64` with `RestDraft.exe`, its DLLs (`RestDraft.*.dll` and the libraries) and `MigrationScripts\`; no `.pdb` files | |
 | 3 | Run `RestDraft.exe` | The window opens. `data\app.db` and `data\logs\<file>` exist beside the executable | |
-| 4 | Look for `data` anywhere else (`%APPDATA%`, `%LOCALAPPDATA%`, the current directory) | Nothing there. The only thing the program puts outside its folder is the unpacked native libraries in `%TEMP%\.net\RestDraft\<hash>` (a known side effect of the single-file publish; no user data) | |
+| 4 | Look for `data` anywhere else (`%APPDATA%`, `%LOCALAPPDATA%`, the current directory) | Nothing there, and `%TEMP%\.net\RestDraft` is not created. The program puts nothing outside its folder (releases up to 0.2.0, which were single-file, unpacked native libraries there) | |
 | 5 | Create a collection, a folder, and a request. Enter `https://example.com`, send | Status 200 shows, the response body is displayed | |
 | 5a | Open the Params tab and add `q` = `1`, open the Headers tab and add `X-Test` = `abc`, then send to an echo endpoint such as `https://httpbin.org/anything` | The echo shows `q=1` in the query and `X-Test: abc` as a header. The tab titles show `Params (1)` and `Headers (1)` | |
 | 6 | Save the request (Ctrl+S) | The tab loses its `*` | |
@@ -51,7 +51,7 @@ Machine / VM: ______________________  Build: ______________  Date: ____________
 | # | Step | Expected | Result |
 |---|---|---|---|
 | 1 | Download or copy the zip to the machine, so it carries the mark of the web | | |
-| 2 | Unzip and run `RestDraft.exe` | Record exactly what happens: runs, SmartScreen prompt, or blocked | |
+| 2 | Unzip and run `RestDraft.exe` | Record exactly what happens: runs, SmartScreen prompt, or blocked. All the DLLs carry the mark of the web too: record whether any is blocked (the window opens and renders text, and requests work) | |
 | 3 | If it is blocked: **stop and revisit signing (Q7 in ARCHITECTURE_PLAN.md) before the release** | | |
 
 ## 4. Before the first public release (plan M8 task 4)
@@ -87,4 +87,24 @@ System packages installed before the first start: `unzip libicu74 libfontconfig1
 Findings:
 - **Executable permission:** the zip is made on Windows, so after `unzip` the file `RestDraft` is not executable. `chmod +x RestDraft` is needed. Not an app bug. Fix: a `.tar.gz` built on an Ubuntu CI runner that keeps the permissions.
 - **About 1 s lag when a window or popup closes** (for example the request method combo box). Environment, not the app: gedit started with `GDK_BACKEND=x11` (XWayland) shows the same lag, gedit over Wayland does not, and `LIBGL_ALWAYS_SOFTWARE=1` does not change RestDraft. Not checked on a real Linux desktop.
-- **Extraction folder:** the single-file publish unpacks the native libraries to `~/.net/RestDraft/<hash>`.
+- **Extraction folder:** the single-file publish of that time unpacked the native libraries to `~/.net/RestDraft/<hash>`. Not the case any more, see the re-check below.
+
+### Re-check of the exe + DLLs package (2026-11-18)
+
+Same machine and WSL as above. The package stopped being single-file (decision of 2026-11-18, `docs/ARCHITECTURE_PLAN.md` section 3.2). Built in WSL from a copy of the tree in the Linux home folder, with .NET SDK 10.0.115 and PowerShell 7.6.10, by `pwsh ./scripts/build.ps1 -Runtimes linux-x64`. Not repeated: the manual checks 1 to 13 above (only that the window opens and the app runs).
+
+| # | Check | Result |
+|---|---|---|
+| 1 | Tests (95, 243, 84, 16, 422), license check, coverage targets, smoke test under Xvfb | Pass |
+| 2 | The tarball has one folder `RestDraft-linux-x64/` (280 entries); `RestDraft` and `createdump` are executable, every other file is 644 | Pass |
+| 3 | The native libraries (`libSkiaSharp.so`, `libHarfBuzzSharp.so`, `libe_sqlite3.so`, `libonigwrap.so`) are files next to the executable | Pass |
+| 4 | `~/.net/RestDraft` gets no new folder when the app runs | Pass |
+| 5 | The window opens under WSLg and the app runs | Pass (see the WSLg note below) |
+
+### Testing on WSL: avoid a false slowness
+
+- The first GUI window after WSL starts, or after `wsl --shutdown`, can take 1 to 5 minutes while WSLg connects to Windows. Meanwhile the app is healthy: it has logged its start and uses about 0% CPU (measured 2026-11-18: `data/app.db` and the log within a second, all D-Bus calls answered within a second, then idle).
+- It is not the app, the build or the working folder: the released 0.2.0 (single-file) was equally slow at first; after `gedit` had opened a window, every start was quick. When the delay is not an app bug, running another GUI app first will show the same delay.
+- Before timing an app on WSLg: open `gedit`, wait for its window, close it, then time the app. To measure a cold start on purpose, run `wsl --shutdown`, open the distro, and time `gedit` first.
+- Build in the WSL home folder, not under `/mnt/c`: the Windows drive keeps no Linux file permissions, so the executable-bit check is meaningless there, and it is slow.
+- `~/.dotnet/tools` (where the `pwsh` tool lives) is not on `PATH` in non-interactive shells such as `wsl.exe -- bash script.sh`. Set it in the script.

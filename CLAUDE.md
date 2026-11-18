@@ -1,6 +1,6 @@
 # RestDraft
 
-A desktop REST API client (Avalonia, .NET 10, SQLite). Windows and Linux x64, released as single-file self-contained packages. All user data lives in a `data` folder next to the executable (`--data-dir` or `RESTDRAFT_DATA_DIR` moves it). The product was called RestClient until 2026-10-28.
+A desktop REST API client (Avalonia, .NET 10, SQLite). Windows and Linux x64, released as self-contained packages: one folder `RestDraft-<runtime>/` with the executable, its DLLs and the native libraries (not single-file, decided 2026-11-18). All user data lives in a `data` folder next to the executable (`--data-dir` or `RESTDRAFT_DATA_DIR` moves it). The product was called RestClient until 2026-10-28.
 
 Your global rules in `~/.claude` (language, code quality, tests, commits, reviews) apply. This file only adds what is specific to this repository.
 
@@ -26,7 +26,7 @@ Conventions (details in `docs/implementation-plan.md` section 1): one type per f
 dotnet test RestDraft.slnx -c Release
 ```
 
-- `build.ps1` overwrites the untracked `dist\RestDraft-win-x64.zip`. A local zip never has the hash of a published release asset (to compare with a release, download the asset).
+- `build.ps1` publishes to `dist\RestDraft-<runtime>\` and overwrites the untracked `dist\RestDraft-win-x64.zip`, which holds that one folder. A local zip never has the hash of a published release asset (to compare with a release, download the asset).
 - `linux-x64` is built only on a Linux host (CI does it, as a `.tar.gz` with the executable bit); on Windows `-Runtimes linux-x64` is skipped with a warning.
 - Coverage is a warning, not a gate (80% target for Domain and Application, `scripts/CoverageReport.ps1`). Failing tests do fail the build.
 - Working-tree files are CRLF (autocrlf); git's "LF will be replaced by CRLF" warning is harmless.
@@ -42,8 +42,10 @@ dotnet test RestDraft.slnx -c Release
 ## Gotchas
 
 - Linux checks ran on Ubuntu 24.04 under WSL2 (distro `Ubuntu-24.04`). A full Linux desktop is untested. Closing popups lags about a second under WSLg; that is WSLg, not the app.
+- WSL testing: the distro has .NET SDK 10 (apt) and PowerShell 7.6.10 (`dotnet tool install --global PowerShell --version 7.6.10`; 7.7.0 has no linux-x64 package), plus `xvfb` and the libraries from the README. Build from a copy in the WSL home (`~/RestDraft-build`, not `/mnt/c`: the Windows drive keeps no file permissions) and run `pwsh ./scripts/build.ps1 -Runtimes linux-x64`. `~/.dotnet/tools` is not on `PATH` in non-interactive shells, so add it in scripts.
+- WSLg false slowness: the first GUI window after WSL starts (or after `wsl --shutdown`) can take 1 to 5 minutes, because WSLg connects to Windows. The app is idle and healthy meanwhile (logged and 0% CPU within a second). Open `gedit` first, wait for its window, and only then time the app. Do not blame a build for a slow first window until another GUI app is also timed (checked 2026-11-18: the 0.2.0 build was equally slow, then everything was quick once WSLg was warm).
 - A Windows path in a test breaks on Linux (`Path.GetFileName` does not split `\`), and `Directory.EnumerateDirectories` has no guaranteed order. Tests run on both OSes in CI.
-- Do not write files outside the data folder; the one exception is the native libraries the single-file app unpacks to `%TEMP%\.net\RestDraft` (Linux: `~/.net/RestDraft`).
+- Do not write files outside the data folder. Since the package stopped being single-file nothing is unpacked to `%TEMP%\.net\RestDraft` (Linux: `~/.net/RestDraft`); releases up to 0.2.0 did unpack their native libraries there.
 - Version lives in `Directory.Build.props`. The About window strips a `+<hash>` suffix.
 
 ## Where to look
