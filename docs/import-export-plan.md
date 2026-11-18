@@ -1,6 +1,6 @@
 # Import and Export: plan
 
-Status: plan agreed in conversation, 2026-11-18. Nothing is implemented. All questions are answered (section 11).
+Status: implemented on branch `feat/import-export` (2026-11-18). All questions are answered (section 11). Deviations from this plan: settings that are the Insomnia defaults are not counted as dropped; a request, folder and collection import share one `InsomniaItemDto`; the integration tests live in `RestDraft.Infrastructure.Tests` because that project has the migration scripts.
 
 ## 1. Goal
 
