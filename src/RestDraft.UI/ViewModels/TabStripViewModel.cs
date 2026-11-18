@@ -211,6 +211,25 @@ public sealed class TabStripViewModel : ViewModelBase
         }
     }
 
+    // The open tabs of these requests that have unsaved edits. An import that overwrites the requests replaces them.
+    public int CountLinkedTabsWithEdits(IReadOnlyCollection<Guid> requestIds)
+    {
+        return Tabs.Count(tab => tab.IsLinked && tab.IsDirty && requestIds.Contains(tab.RequestId));
+    }
+
+    // Shows the saved version of these requests in their open tabs, after an import replaced them. Edits in the tabs are lost.
+    public async Task ReloadLinkedAsync(IReadOnlyCollection<Guid> requestIds)
+    {
+        foreach (var tab in Tabs.Where(tab => tab.IsLinked && requestIds.Contains(tab.RequestId)).ToList())
+        {
+            var loaded = await _tabServices.Requests.GetAsync(tab.RequestId, CancellationToken.None);
+            if (loaded.IsSuccess)
+            {
+                ReplaceTab(tab, loaded.Value!);
+            }
+        }
+    }
+
     private void AddRestoredTabs(IReadOnlyList<RestoredTab> restored)
     {
         foreach (var item in restored)
@@ -241,6 +260,25 @@ public sealed class TabStripViewModel : ViewModelBase
         Tabs.Add(tab);
         SelectedTab = tab;
         TabOpened?.Invoke(this, tab);
+    }
+
+    private void ReplaceTab(RequestTabViewModel old, RequestDefinition definition)
+    {
+        var wasSelected = SelectedTab == old;
+        var index = Tabs.IndexOf(old);
+        old.Cancel();
+        old.RequestSent -= OnTabRequestSent;
+        old.Linked -= OnTabLinked;
+        old.Changed -= OnTabChanged;
+        old.CloseRequested -= OnTabCloseRequested;
+        _recent.Remove(old);
+        var tab = CreateTab(definition, isLinked: true, isDirty: false);
+        tab.SectionIndex = old.SectionIndex;
+        Tabs[index] = tab;
+        if (wasSelected)
+        {
+            SelectedTab = tab;
+        }
     }
 
     private void RemoveTab(RequestTabViewModel tab)
