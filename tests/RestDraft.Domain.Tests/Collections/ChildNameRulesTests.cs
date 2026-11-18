@@ -64,6 +64,28 @@ public class ChildNameRulesTests
         Assert.That(name, Is.EqualTo("New request 2"));
     }
 
+    [TestCase("List", "List", "List 2")]
+    [TestCase("list", "List", "list 2")]
+    [TestCase("List", " List ", "List 2")]
+    [TestCase("List", "Other", "List")]
+    public void NextAvailableNameAmongNamesIgnoresCaseAndSpaces(string baseName, string taken, string expected)
+    {
+        Assert.That(ChildNameRules.NextAvailableName(baseName, [taken]), Is.EqualTo(expected));
+    }
+
+    [Test]
+    public void NextAvailableNameAmongNamesSkipsTakenSuffixes()
+    {
+        Assert.That(ChildNameRules.NextAvailableName("List", ["List", "list 2", "List 3"]), Is.EqualTo("List 4"));
+    }
+
+    [TestCase("API", " api ", true)]
+    [TestCase("API", "apis", false)]
+    public void IsSameNameIgnoresCaseAndSurroundingSpaces(string first, string second, bool expected)
+    {
+        Assert.That(ChildNameRules.IsSameName(first, second), Is.EqualTo(expected));
+    }
+
     [Test]
     public void NewFolderNameSkipsTakenSuffixes()
     {

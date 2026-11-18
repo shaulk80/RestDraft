@@ -3,6 +3,7 @@ using RestDraft.Application.Abstractions;
 using RestDraft.Application.Bodies;
 using RestDraft.Application.Collections;
 using RestDraft.Application.Environments;
+using RestDraft.Application.Exchange;
 using RestDraft.Application.History;
 using RestDraft.Application.Requests;
 using RestDraft.Application.Secrets;
@@ -42,6 +43,8 @@ public static class ApplicationServiceCollectionExtensions
         services.AddSingleton<IFolderService, FolderService>();
         services.AddSingleton<IRequestService, RequestService>();
         services.AddSingleton<ICollectionTreeService, CollectionTreeService>();
+        services.AddSingleton<IImportService, ImportService>();
+        services.AddSingleton<IExportService, ExportService>();
         services.AddSingleton(RetentionPolicy.Default);
         services.AddSingleton<HistoryRetention>();
         services.AddSingleton<IHistoryService, HistoryService>();
