@@ -1,0 +1,82 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:RestDraft.UI.ViewModels"
+        xmlns:views="using:RestDraft.UI.Views"
+        x:Class="RestDraft.UI.Views.ImportPreviewWindow"
+        x:DataType="vm:ImportPreviewViewModel"
+        Title="Import collection"
+        Width="640"
+        Height="700"
+        MinWidth="480"
+        MinHeight="460"
+        WindowStartupLocation="CenterOwner">
+  <Grid Margin="12" RowDefinitions="Auto,Auto,Auto,*,Auto,Auto,Auto,Auto,Auto" RowSpacing="8">
+    <TextBlock Grid.Row="0" Text="Import into" />
+    <Grid Grid.Row="1" ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto" ColumnSpacing="8" RowSpacing="6">
+      <RadioButton Grid.Row="0"
+                   Grid.Column="0"
+                   GroupName="ImportTarget"
+                   Content="New collection"
+                   IsChecked="{Binding IsNewCollection, Mode=TwoWay}" />
+      <TextBox Grid.Row="0"
+               Grid.Column="1"
+               Text="{Binding NewName}"
+               IsEnabled="{Binding IsNewCollection}"
+               AutomationProperties.Name="Name of the new collection" />
+      <RadioButton Grid.Row="1"
+                   Grid.Column="0"
+                   GroupName="ImportTarget"
+                   Content="Existing collection"
+                   IsEnabled="{Binding HasExistingCollections}"
+                   IsChecked="{Binding IsExistingCollection, Mode=TwoWay}" />
+      <ComboBox Grid.Row="1"
+                Grid.Column="1"
+                HorizontalAlignment="Stretch"
+                ItemsSource="{Binding ExistingCollections}"
+                SelectedItem="{Binding SelectedExisting}"
+                IsEnabled="{Binding IsExistingCollection}"
+                AutomationProperties.Name="Existing collection to import into">
+        <ComboBox.ItemTemplate>
+          <DataTemplate x:DataType="vm:CollectionChoice">
+            <TextBlock Text="{Binding Name}" />
+          </DataTemplate>
+        </ComboBox.ItemTemplate>
+      </ComboBox>
+    </Grid>
+    <CheckBox Grid.Row="2"
+              Content="Overwrite existing items"
+              IsEnabled="{Binding CanOverwrite}"
+              IsChecked="{Binding Overwrite, Mode=TwoWay}" />
+    <Border Grid.Row="3" Classes="panel">
+      <views:SelectionTreeView DataContext="{Binding Tree}" />
+    </Border>
+    <StackPanel Grid.Row="4" Orientation="Horizontal" Spacing="8">
+      <Button Content="Select all" Command="{Binding SelectAllCommand}" />
+      <Button Content="Clear all" Command="{Binding ClearAllCommand}" />
+    </StackPanel>
+    <TextBlock Grid.Row="5" Text="{Binding Summary}" TextWrapping="Wrap" AutomationProperties.LiveSetting="Polite" />
+    <TextBlock Grid.Row="6"
+               Classes="warning"
+               TextWrapping="Wrap"
+               Text="{Binding TabsNotice}"
+               IsVisible="{Binding TabsNotice, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+    <Expander Grid.Row="7"
+              Header="{Binding WarningsHeader}"
+              IsVisible="{Binding HasWarnings}"
+              AutomationProperties.Name="Warnings">
+      <ScrollViewer MaxHeight="120">
+        <ItemsControl ItemsSource="{Binding Warnings}">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="x:String">
+              <TextBlock Text="{Binding}" TextWrapping="Wrap" Margin="0,0,0,4" />
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </ScrollViewer>
+    </Expander>
+    <StackPanel Grid.Row="8" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+      <Button Content="Import" IsDefault="True" IsEnabled="{Binding CanImport}" Click="OnImportClick" />
+      <Button Content="Cancel" IsCancel="True" Click="OnCancelClick" />
+    </StackPanel>
+  </Grid>
+</Window>

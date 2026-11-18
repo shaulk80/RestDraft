@@ -297,7 +297,8 @@ public partial class MainWindowSmokeTests
             new SecretStatusViewModel(CreateSecrets(), A.Fake<ISecretPrompt>()),
             new WorkspaceLayoutViewModel(_settings),
             _settings,
-            A.Fake<ISettingsDialogs>());
+            A.Fake<ISettingsDialogs>(),
+            A.Fake<IExchangeDialogs>());
         _window = new MainWindow { DataContext = _viewModel };
         _window.Show();
         Dispatcher.UIThread.RunJobs();

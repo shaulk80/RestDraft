@@ -81,6 +81,19 @@ public sealed class CollectionsTreeViewModel : ViewModelBase
         }
     }
 
+    // Whether there is any collection, even if a filter hides all of them.
+    public bool HasCollections => _allCollections.Count > 0;
+
+    // The collection that holds the selected node, or null when nothing is selected.
+    public Guid? SelectedCollectionId
+    {
+        get
+        {
+            var selectedId = SelectedNode?.Id;
+            return Roots.FirstOrDefault(root => root.Id == selectedId || Flatten(root).Any(node => node.Id == selectedId))?.Id;
+        }
+    }
+
     // From the settings. A single click on a request opens it. Otherwise it takes a double-click.
     public bool OpensOnSingleClick { get; set; }
 

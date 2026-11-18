@@ -101,6 +101,8 @@ public class DialogAccessibilityTests
     }
 
     [TestCase(typeof(ConfirmationWindow))]
+    [TestCase(typeof(ExportSelectionWindow))]
+    [TestCase(typeof(ImportPreviewWindow))]
     [TestCase(typeof(SaveChangesWindow))]
     [TestCase(typeof(SaveDestinationWindow))]
     [TestCase(typeof(UnlockDialogWindow))]
@@ -139,6 +141,8 @@ public class DialogAccessibilityTests
     [TestCase(typeof(AboutWindow))]
     [TestCase(typeof(ConfirmationWindow))]
     [TestCase(typeof(EnvironmentEditorWindow))]
+    [TestCase(typeof(ExportSelectionWindow))]
+    [TestCase(typeof(ImportPreviewWindow))]
     [TestCase(typeof(MasterPasswordSetupWindow))]
     [TestCase(typeof(SaveChangesWindow))]
     [TestCase(typeof(SaveDestinationWindow))]
