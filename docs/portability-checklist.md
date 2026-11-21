@@ -112,3 +112,46 @@ Same machine and WSL as above. The package stopped being single-file (decision o
 - Before timing an app on WSLg: open `gedit`, wait for its window, close it, then time the app. To measure a cold start on purpose, run `wsl --shutdown`, open the distro, and time `gedit` first.
 - Build in the WSL home folder, not under `/mnt/c`: the Windows drive keeps no Linux file permissions, so the executable-bit check is meaningless there, and it is slow.
 - `~/.dotnet/tools` (where the `pwsh` tool lives) is not on `PATH` in non-interactive shells such as `wsl.exe -- bash script.sh`. Set it in the script.
+
+### Verify a release in WSL
+
+`scripts/verify-release-wsl.sh` checks a `RestDraft-linux-x64.tar.gz` (a downloaded release asset, or `dist/` of a CI artifact) the way a user would run it. Use it for step 8 of the release procedure and after any change to the package layout.
+
+1. Download the release assets into a new, empty folder, for example `gh release download v<version> -D C:\Temp\rd-check`. Keep `SHA256SUMS.txt` next to the tarball so the script can check the hash.
+2. Run it from Windows, with the tarball path as a Linux path (`/mnt/c/...`) or a Windows path:
+
+   ```powershell
+   wsl.exe -d Ubuntu-24.04 -- bash /mnt/c/Vibe/RestDraft/scripts/verify-release-wsl.sh /mnt/c/Temp/rd-check/RestDraft-linux-x64.tar.gz
+   ```
+
+3. Read the `PASS` and `FAIL` lines. The exit code is 0 only when all of them passed.
+
+What it checks: the hash (when `SHA256SUMS.txt` is there), one top-level folder `RestDraft-linux-x64/`, that only `RestDraft` and `createdump` are executable, that the app starts from a fresh extraction in the WSL home folder (not `/mnt/c`), that `data/app.db` and a log appear inside the program folder, that the app is still running 5 seconds later, and that `~/.net/RestDraft` got no new entries. It opens `gedit` first when it is installed, so the WSLg warm-up (see above) is not mistaken for a slow app. `WAIT_SECONDS` (default 360) is how long it waits for `data/app.db`. It deletes its extraction folder when it ends.
+
+It does not click through the UI: sending a request, the file dialogs and the other manual checks above stay manual (next section). The script is kept as LF in git (`.gitattributes`), because bash cannot run a CRLF file.
+
+### Run the app in WSL for manual tests
+
+For the checks the script cannot do: use the app in its window, the way a user would. Do it after the script passed, with the same tarball.
+
+1. **Libraries.** The distro needs the system libraries from the README (Linux, step 2). They are already installed in `Ubuntu-24.04`; on a new distro, run the `sudo apt install` line from the README yourself.
+2. **Warm up WSLg.** Open the distro (`wsl -d Ubuntu-24.04`), run `gedit &`, wait for its window to appear (up to 5 minutes after WSL starts), then close it. Skip this and the first start of the app looks hung (see above).
+3. **Extract in the WSL home folder**, not under `/mnt/c` (no file permissions there, and slow):
+
+   ```bash
+   mkdir ~/rd-manual
+   tar -xzf /mnt/c/Temp/rd-check/RestDraft-linux-x64.tar.gz -C ~/rd-manual
+   ```
+
+4. **Start it from the terminal**, so that startup errors and anything the app prints are visible:
+
+   ```bash
+   ~/rd-manual/RestDraft-linux-x64/RestDraft
+   ```
+
+   The window opens on the Windows desktop through WSLg. `data/` is created inside `~/rd-manual/RestDraft-linux-x64/`. To keep data between runs or between package versions, start with `--data-dir ~/rd-data` (or set `RESTDRAFT_DATA_DIR`). Stop the app by closing its window or with Ctrl+C in the terminal.
+5. **Something to send requests to.** `https://example.com` works without any setup (check 7 above). For a server you control, run `tests/RestDraft.SampleApi` (listens on `http://localhost:5080`) inside the same distro, from the copy of the tree in `~/RestDraft-build`: `dotnet run --project tests/RestDraft.SampleApi`. Reaching a server that runs on Windows from WSL2 depends on the WSL network mode and was not tried.
+6. **What to check.** Go through the manual checks 1 to 13 in the first table of this section, and the items still open: Import and Export file dialogs (see "Import and export" above), the filter popup (funnel button, Ctrl+F, Edit > Filter...), and the window behaviour (menus, shortcuts, drag and drop, splitters, themes, fonts). Record the result as a new dated section after the tables above, with the distro and WSL versions (`wsl --version`, `lsb_release -d`).
+7. **Clean up.** Delete `~/rd-manual` (copy `data` out first if it holds anything you want). `~/.net/RestDraft` is not used by 0.3.0 and later; a leftover one comes from older versions and can be deleted.
+
+Known WSLg behaviour that is not a bug of the app: the first window can take minutes, and closing a popup can lag by about a second.
