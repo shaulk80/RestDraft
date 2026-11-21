@@ -4,21 +4,26 @@ Updated: 2026-11-18. Keep this file short and current. The old milestone log is 
 
 ## Now
 
-Version 0.2.0 is the latest published release (2026-11-13; Windows x64 and Linux x64, unsigned). Version 0.3.0 is being prepared (branch `release-0.3.0`, 2026-11-18): it holds the three changes below, and its notes are at the top of `RELEASE_NOTES.md`. All planned milestones (M0 to M11) are done. New work starts from a pull request; see `CLAUDE.md` for the workflow.
+Version 0.3.0 is the latest published release (2026-11-18; Windows x64 and Linux x64, unsigned). It adds import and export of collections (Insomnia v5 YAML), a filter popup for the Collections tree and the History, and a package that is a folder of files instead of a single executable (see `RELEASE_NOTES.md`). All planned milestones (M0 to M11) are done. New work starts from a pull request; see `CLAUDE.md` for the workflow.
 
-**In 0.3.0 (branch `feat/build-exe-with-dlls`, 2026-11-18):** the packages are no longer single-file. Each package holds one folder `RestDraft-<runtime>/` with the executable, about 270 DLLs and native libraries, and nothing is unpacked to `%TEMP%\.net\RestDraft` any more (decision Q13 in `ARCHITECTURE_PLAN.md`). Size (CI build of `main`, 2026-11-18): the zip is 52.0 MB against 47.9 MB for 0.2.0, the tarball 47.6 MB against 44.0 MB, so each is about 4 MB (8%) larger. The next release notes must say so: users unzip into a new folder, and the old `%TEMP%\.net\RestDraft` can be deleted. Verified on Windows and on Ubuntu 24.04 under WSL2 (build, tests, smoke test, package layout, native libraries loaded from the program folder). Not yet verified: the GitHub Actions run, and Smart App Control or SmartScreen with the DLLs (portability checklist section 3).
+**Folder package (0.3.0):** each package holds one folder `RestDraft-<runtime>/` with the executable, about 270 DLLs and native libraries, and nothing is unpacked to `%TEMP%\.net\RestDraft` (Linux: `~/.net/RestDraft`) any more (decision Q13 in `ARCHITECTURE_PLAN.md`). The zip is 52.0 MB against 47.9 MB for 0.2.0, the tarball 47.6 MB against 44.0 MB, so each is about 4 MB (8%) larger.
 
-**In 0.3.0 (branch `feat/common-search`, 2026-11-18):** one filter popup for both sidebar tabs. A funnel button at the left of the top bar opens it (text, method, "Search in bodies"); it filters the tree or the history, whichever tab is shown, and each tab keeps its own filter. The search box and method list moved off the History tab (Restore stays). The tree is pruned from a copy, and open tabs are matched against all requests, so a filter never closes a tab. The popup has a Clear button (disabled while no filter is applied). Ctrl+F (also Edit > Filter...) opens it from anywhere, including when the top bar is hidden from the View menu; then it hangs under the main menu. Not yet verified: Linux.
+**Filter popup (0.3.0):** one popup for both sidebar tabs. A funnel button at the left of the top bar opens it (text, method, "Search in bodies"); it filters the tree or the history, whichever tab is shown, and each tab keeps its own filter. The search box and method list moved off the History tab (Restore stays). The tree is pruned from a copy, and open tabs are matched against all requests, so a filter never closes a tab. The popup has a Clear button (disabled while no filter is applied). Ctrl+F (also Edit > Filter...) opens it from anywhere, including when the top bar is hidden from the View menu; then it hangs under the main menu.
 
-**In 0.3.0 (branch `feat/import-export`, 2026-11-18):** File > Import... and File > Export... for one collection as an Insomnia v5 YAML file (plan: `docs/import-export-plan.md`, all of it implemented). The format sits behind `ICollectionFormat`, so Insomnia v4 JSON, Postman or OpenAPI are one more class. Import shows a preview tree with check boxes, a new or an existing target, an overwrite option, and warnings; overwritten requests keep their id and their open tabs reload (with a second question when a tab has unsaved edits). New dependency: YamlDotNet 18.1.0 (MIT, no transitive packages; decision Q14 in `ARCHITECTURE_PLAN.md`). Verified: unit and integration tests, `build.ps1` with the smoke test, both sample files in `C:\Vibe\z_tmp` read and written back with the same item counts. Not verified: clicking through the real file dialogs on Windows, Linux file dialogs, opening an exported file in Insomnia itself.
+**Import and export (0.3.0):** File > Import... and File > Export... for one collection as an Insomnia v5 YAML file (plan: `docs/import-export-plan.md`, all of it implemented). The format sits behind `ICollectionFormat`, so Insomnia v4 JSON, Postman or OpenAPI are one more class. Import shows a preview tree with check boxes, a new or an existing target, an overwrite option, and warnings; overwritten requests keep their id and their open tabs reload (with a second question when a tab has unsaved edits). New dependency: YamlDotNet 18.1.0 (MIT, no transitive packages; decision Q14 in `ARCHITECTURE_PLAN.md`).
+
+**Checked on the published 0.3.0 assets (2026-11-18):** `sha256sum -c` OK for both archives; one top-level folder in each; in the tarball only `RestDraft` and `createdump` are executable. The Windows zip and the Linux tarball (Ubuntu 24.04 under WSL2) each started from a fresh folder and created `data/app.db` and a log inside the program folder; nothing was written to `%TEMP%\.net` or `~/.net`.
+
 ## Releases
 
 | Version | Date | Assets | Notes |
 |---|---|---|---|
-| v0.3.0 | not yet published | `RestDraft-win-x64.zip`, `RestDraft-linux-x64.tar.gz`, `SHA256SUMS.txt` | In preparation. Import and export (Insomnia v5 YAML), filter popup, folder package instead of a single file. |
+| v0.3.0 | 2026-11-18 | `RestDraft-win-x64.zip`, `RestDraft-linux-x64.tar.gz`, `SHA256SUMS.txt` | Built by CI from the tag. Import and export (Insomnia v5 YAML), filter popup, folder package instead of a single file. |
 | v0.2.0 | 2026-11-13 | `RestDraft-win-x64.zip`, `RestDraft-linux-x64.tar.gz`, `SHA256SUMS.txt` | Built by CI from the tag. Window state, tree icons, taller body editor, splitter fix. |
 | v0.1.1 | 2026-10-31 | `RestDraft-win-x64.zip`, `RestDraft-linux-x64.tar.gz`, `SHA256SUMS.txt` | Built by CI from the tag. Linux added. |
 | v0.1.0 | 2026-10-30 | `RestDraft-win-x64.zip`, `SHA256SUMS.txt` | Windows only, built on the maintainer's machine. |
+
+v0.3.0 assets: zip `3920cd2d7fac1d3c2c8ffa788acade22e7d293e419a38cd3c3ec8f2fa704a09c`, tarball `9aa406036306702e07d8d682235f0bfe6dafa657aef6a564c9d7ea8281ac81c1`.
 
 v0.2.0 assets: zip `547e206fca071f2a2ed2a2743f7f644e44f69d41750e66365f2e8ed8a6dded01`, tarball `7fd5d498766d76e6e190d941576a62ced7a0046103d0890dc0e3dcaf58012c75`.
 
@@ -27,6 +32,7 @@ v0.1.1 assets: zip `df389225b6bc39757e006cae2ca0f6761f9ce0019e96f7ae1f7f8a3f7d98
 ## Open
 
 - **Code signing:** SignPath Foundation declined (2026-10, not enough public visibility; a paid subscription was declined by the owner). Reapply when the project has stars, forks, contributors and external mentions. If approved: SignPath GitHub Action in CI, MFA on the SignPath account, version without the `+<hash>` suffix, README policy wording (see the archive, M10).
+- **Not verified for 0.3.0:** Smart App Control and SmartScreen with the folder package and its DLLs (portability checklist section 3); clicking through the import and export file dialogs on Windows and on Linux; the filter popup on Linux; opening an exported file in Insomnia itself.
 - **Backlog:** the known limitations in `RELEASE_NOTES.md` (0.1.0 section), and anything new. No issues are filed yet; GitHub Issues is the place for them.
 
 ## How things are set up
