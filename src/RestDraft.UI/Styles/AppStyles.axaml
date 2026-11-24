@@ -83,6 +83,11 @@
   <Style Selector="ae|TextEditor /template/ ScrollViewer">
     <Setter Property="AllowAutoHide" Value="False" />
   </Style>
+  <!-- The same for the tree and the lists. A fading scroll bar is an overlay, so the highlight of a hovered or selected row
+       would run under it. A scroll bar that stays has a column of its own, and the rows end where it begins. -->
+  <Style Selector="TreeView, ListBox">
+    <Setter Property="ScrollViewer.AllowAutoHide" Value="False" />
+  </Style>
   <!-- Small buttons with a line icon (a Path) and a tooltip, such as the ones above the tree and under the environments. -->
   <Style Selector="Button.tool">
     <Setter Property="Padding" Value="6,3" />

@@ -2,6 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:RestDraft.UI.ViewModels"
              xmlns:behaviors="using:RestDraft.UI.Behaviors"
+             xmlns:controls="using:RestDraft.UI.Controls"
              x:Class="RestDraft.UI.Views.CollectionsTreeView"
              x:DataType="vm:CollectionsTreeViewModel">
   <Grid>
@@ -40,10 +41,10 @@
                  Text="Nothing matches the filter."
                  TextWrapping="Wrap"
                  IsVisible="{Binding IsFilteredEmpty}" />
-      <TreeView x:Name="Tree"
-                ItemsSource="{Binding Roots}"
-                SelectedItem="{Binding SelectedNode}"
-                AutomationProperties.Name="Collections">
+      <controls:EditAwareTreeView x:Name="Tree"
+                                  ItemsSource="{Binding Roots}"
+                                  SelectedItem="{Binding SelectedNode}"
+                                  AutomationProperties.Name="Collections">
         <TreeView.KeyBindings>
           <KeyBinding Gesture="F2" Command="{Binding RenameSelectedCommand}" />
           <KeyBinding Gesture="Enter" Command="{Binding OpenSelectedCommand}" />
@@ -81,6 +82,19 @@
           </Style>
           <Style Selector="TreeViewItem /template/ ToggleButton#PART_ExpandCollapseChevron:checked /template/ Path#ChevronPath">
             <Setter Property="Data" Value="{DynamicResource TreeViewItemExpandedChevronPathData}" />
+          </Style>
+          <!-- Fluent narrows the cell of the chevron of a row without children to 12 px, while the cell of a row with children
+               is as wide as the chevron button above, so such a row starts one level too far left, and so do its own
+               children. The cell keeps its normal width and the chevron stays in it, invisible and out of the way of the
+               pointer and the Tab key, so every row of a level starts at the same place. -->
+          <Style Selector="TreeViewItem:empty /template/ Panel#PART_ExpandCollapseChevronContainer">
+            <Setter Property="Width" Value="NaN" />
+          </Style>
+          <Style Selector="TreeViewItem:empty /template/ ToggleButton#PART_ExpandCollapseChevron">
+            <Setter Property="IsVisible" Value="True" />
+            <Setter Property="Opacity" Value="0" />
+            <Setter Property="IsHitTestVisible" Value="False" />
+            <Setter Property="Focusable" Value="False" />
           </Style>
           <!-- Collections and folders have an icon and text one size larger than the requests (14), so they stand out. -->
           <Style Selector="TextBlock.container">
@@ -122,7 +136,7 @@
             </Grid>
           </TreeDataTemplate>
         </TreeView.DataTemplates>
-      </TreeView>
+      </controls:EditAwareTreeView>
     </DockPanel>
     <!-- Not light-dismissable on purpose. Light dismiss swallows the first press outside the menu, so
          a right-click on another row would never reach the tree. The tree closes this menu itself. -->
