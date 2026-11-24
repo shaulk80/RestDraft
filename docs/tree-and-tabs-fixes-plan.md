@@ -61,6 +61,12 @@ Each fix starts with a failing headless test in `RestDraft.UI.Tests` (`Collectio
 
 Manual check before reporting done: run the app, look at the tree with many folders (the `indent.png` and `scrollbar.png` cases), type `-` `/` `*` in a rename box.
 
+Implemented on branch `fix/tree-keys-and-looks` (2026-11-24). What differed from the plan, found by running the tests first:
+
+- Issue 1: a `TreeView` subclass was not enough. The rows (`TreeViewItem`) take `-`, `/`, `*`, `+` and Left themselves. The tree creates both subclasses now: `EditAwareTreeView` and `EditAwareTreeViewItem` (in `Controls`), and both ignore a key press that comes from a `TextBox`. Without the change the numpad keys and Left fail the tests; Home, End and Right already worked (the box handles them), and stay as guards.
+- Issue 3: a style on the inner `ScrollViewer` has no effect, because the `TreeView` and `ListBox` templates bind it to the attached property. The style sets `ScrollViewer.AllowAutoHide` on `TreeView` and `ListBox` instead.
+- Issue 4: the theme gives the chevron cell of an empty row a fixed width of 12 px (28 px for a row with children), which is the 16 px of the report. The fix sets that width back to automatic and keeps the chevron in the cell, invisible and not clickable. Measured with a test: an empty folder, a request and a folder with children now start at the same x, and the step per level is the same for an empty parent.
+
 ### 3.2 Pull request B: drag and drop (issues 2, 5)
 
 Shared helper: the tree already has press, threshold, `DoDragDropAsync` code in `CollectionsTreeView.axaml.cs`. Move it into one small class (for example `DragStarter`) and use it for the tree and the tab strip, so the logic exists once.

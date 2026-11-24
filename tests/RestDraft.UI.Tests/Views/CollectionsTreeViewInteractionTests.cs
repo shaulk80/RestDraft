@@ -383,6 +383,136 @@ public class CollectionsTreeViewInteractionTests
         Assert.That(text.FontSize, Is.EqualTo(fontSize));
     }
 
+    // The rename box is inside the tree, so the keys the tree uses to expand, collapse and move must stay the box's.
+    [TestCase(Key.Subtract, PhysicalKey.NumPadSubtract, "-")]
+    [TestCase(Key.Divide, PhysicalKey.NumPadDivide, "/")]
+    [TestCase(Key.Multiply, PhysicalKey.NumPadMultiply, "*")]
+    [TestCase(Key.Add, PhysicalKey.NumPadAdd, "+")]
+    [AvaloniaTest]
+    public async Task NumpadSymbolsWhileRenamingAreTypedIntoTheBox(Key key, PhysicalKey physicalKey, string symbol)
+    {
+        var box = await StartRenamingAlphaAsync();
+
+        Type(key, physicalKey, symbol);
+
+        Assert.That(box.Text, Is.EqualTo(symbol));
+    }
+
+    [TestCase(Key.Home, PhysicalKey.Home, "xAlpha")]
+    [TestCase(Key.End, PhysicalKey.End, "Alphax")]
+    [TestCase(Key.Left, PhysicalKey.ArrowLeft, "xAlpha")]
+    [TestCase(Key.Right, PhysicalKey.ArrowRight, "Alphax")]
+    [AvaloniaTest]
+    public async Task CaretKeysWhileRenamingMoveTheCaretInTheBoxAndNotTheSelectionInTheTree(Key key, PhysicalKey physicalKey, string expected)
+    {
+        var box = await StartRenamingAlphaAsync();
+
+        Type(key, physicalKey, null);
+        Type(Key.X, PhysicalKey.X, "x");
+
+        Assert.That(box.Text, Is.EqualTo(expected));
+    }
+
+    // The scrollbar must take its own column. A thin overlay scrollbar lets the row highlight run under it.
+    [AvaloniaTest]
+    public async Task RowsEndWhereTheVerticalScrollbarBegins()
+    {
+        var folders = Enumerable.Range(1, 40).Select(number => TreeFixtures.CreateFolder($"Folder {number}")).ToList();
+        var sidebar = await OpenSidebarAsync([new Collection(Guid.NewGuid(), "Many", TreeFixtures.CreateFolder(string.Empty, folders))]);
+        ClickExpander(sidebar.Roots[0]);
+
+        var scrollBar = _view.GetVisualDescendants().OfType<ScrollBar>()
+            .First(bar => bar.Orientation == Avalonia.Layout.Orientation.Vertical && bar.IsEffectivelyVisible);
+        var row = FindItem(sidebar.Roots[0]);
+        var rowRight = row.TranslatePoint(new Point(row.Bounds.Width, 0), _window)!.Value.X;
+        var scrollBarLeft = scrollBar.TranslatePoint(new Point(0, 0), _window)!.Value.X;
+
+        Assert.That(rowRight, Is.LessThanOrEqualTo(scrollBarLeft + 0.5));
+    }
+
+    // Collections, folders and requests of the same level start at the same place, whether or not they have children.
+    [TestCase("Empty")]
+    [TestCase("Request")]
+    [AvaloniaTest]
+    public async Task NodesWithoutChildrenAreIndentedLikeTheirSiblingsWithChildren(string name)
+    {
+        var sidebar = await OpenSidebarWithMixedSiblingsAsync();
+        var siblings = sidebar.Roots[0].Children;
+
+        var withChildren = LeftOfContent(siblings.First(node => node.Name == "Full"));
+        var withoutChildren = LeftOfContent(siblings.First(node => node.Name == name));
+
+        Assert.That(withoutChildren, Is.EqualTo(withChildren).Within(0.5));
+    }
+
+    [AvaloniaTest]
+    public async Task ChildrenOfAnEmptyFolderAreOneLevelDeeperThanItsOwnLevel()
+    {
+        var sidebar = await OpenSidebarWithMixedSiblingsAsync();
+        var collection = sidebar.Roots[0];
+        var full = collection.Children.First(node => node.Name == "Full");
+        var sub = full.Children[0];
+
+        var step = LeftOfContent(full) - LeftOfContent(collection);
+
+        Assert.That(LeftOfContent(sub) - LeftOfContent(full), Is.EqualTo(step).Within(0.5));
+        Assert.That(step, Is.GreaterThan(0));
+    }
+
+    // The headless platform does not turn a key symbol into text. A real one raises the text only when nothing handled
+    // the key press, so this does the same: the key goes down first, and the text follows if the key is still unhandled.
+    private void Type(Key key, PhysicalKey physicalKey, string? text)
+    {
+        var handled = false;
+        void Record(object? sender, KeyEventArgs e)
+        {
+            handled = e.Handled;
+        }
+
+        _window.AddHandler(InputElement.KeyDownEvent, Record, Avalonia.Interactivity.RoutingStrategies.Bubble, handledEventsToo: true);
+        _window.KeyPress(key, RawInputModifiers.None, physicalKey, null);
+        _window.RemoveHandler(InputElement.KeyDownEvent, Record);
+        if (text is not null && !handled)
+        {
+            _window.KeyTextInput(text);
+        }
+
+        Dispatcher.UIThread.RunJobs();
+    }
+
+    // Alpha has a child, so the keys that expand and collapse a row have something to do.
+    private async Task<TextBox> StartRenamingAlphaAsync()
+    {
+        var alpha = TreeFixtures.CreateFolder("Alpha", [TreeFixtures.CreateFolder("Child")]);
+        var sidebar = await OpenSidebarAsync([new Collection(Guid.NewGuid(), "First", TreeFixtures.CreateFolder(string.Empty, [alpha]))]);
+        ClickExpander(sidebar.Roots[0]);
+        var folder = sidebar.Roots[0].Children[0];
+        A.CallTo(() => _fixtures.Folders.RenameAsync(folder.Id, A<string>._, A<CancellationToken>._))
+            .Returns(Task.FromResult(Result.Success()));
+        sidebar.SelectedNode = folder;
+        FindItem(folder).Focus();
+        _window.KeyPressQwerty(PhysicalKey.F2, RawInputModifiers.None);
+        await Task.Delay(50);
+        Dispatcher.UIThread.RunJobs();
+        return (TextBox)_window.FocusManager!.GetFocusedElement()!;
+    }
+
+    private async Task<CollectionsTreeViewModel> OpenSidebarWithMixedSiblingsAsync()
+    {
+        var request = new RequestDefinition { Id = Guid.NewGuid(), Name = "Request" };
+        var full = TreeFixtures.CreateFolder("Full", [TreeFixtures.CreateFolder("Sub")]);
+        var root = new Folder(Guid.NewGuid(), string.Empty, [TreeFixtures.CreateFolder("Empty"), full], [request]);
+        var sidebar = await OpenSidebarAsync([new Collection(Guid.NewGuid(), "Shop", root)]);
+        ClickExpander(sidebar.Roots[0]);
+        ClickExpander(sidebar.Roots[0].Children.First(node => node.Name == "Full"));
+        return sidebar;
+    }
+
+    private double LeftOfContent(TreeNodeViewModel node)
+    {
+        return FindContent(node).TranslatePoint(new Point(0, 0), _window)!.Value.X;
+    }
+
     private async Task<CollectionsTreeViewModel> OpenSidebarWithAllNodeKindsAsync()
     {
         var request = new RequestDefinition { Id = Guid.NewGuid(), Name = "Login" };
