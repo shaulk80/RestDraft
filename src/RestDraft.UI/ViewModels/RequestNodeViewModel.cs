@@ -17,6 +17,4 @@ public sealed class RequestNodeViewModel : TreeNodeViewModel
     public override bool IsRequest => true;
 
     public override Guid DropFolderId => _parentFolderId;
-
-    public override Guid? DropBeforeId => Id;
 }

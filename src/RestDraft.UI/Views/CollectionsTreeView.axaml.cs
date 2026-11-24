@@ -5,28 +5,29 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
+using RestDraft.UI.Behaviors;
 using RestDraft.UI.ViewModels;
 
 namespace RestDraft.UI.Views;
 
 public partial class CollectionsTreeView : UserControl
 {
-    private static readonly DataFormat<TreeNodeViewModel> NodeFormat = DataFormat.CreateInProcessFormat<TreeNodeViewModel>("RestDraft.TreeNode");
-    private const double DragThreshold = 4;
+    public static readonly DataFormat<TreeNodeViewModel> NodeFormat = DataFormat.CreateInProcessFormat<TreeNodeViewModel>("RestDraft.TreeNode");
 
-    private PointerPressedEventArgs? _pressArgs;
-    private TreeNodeViewModel? _pressedNode;
-    private Point _pressPoint;
+    private readonly DragStarter<TreeNodeViewModel> _drag = new(NodeFormat);
+    private readonly DropIndicator _dropIndicator;
     private TopLevel? _topLevel;
 
     public CollectionsTreeView()
     {
         InitializeComponent();
+        _dropIndicator = new DropIndicator(DropIndicatorBorder, ContentGrid);
         DragDrop.SetAllowDrop(this, true);
         AddHandler(PointerPressedEvent, OnPointerPressed, RoutingStrategies.Tunnel);
         AddHandler(PointerMovedEvent, OnPointerMoved, RoutingStrategies.Tunnel);
         AddHandler(PointerReleasedEvent, OnPointerReleased, RoutingStrategies.Tunnel);
         AddHandler(DragDrop.DragOverEvent, OnDragOver);
+        AddHandler(DragDrop.DragLeaveEvent, OnDragLeave);
         AddHandler(DragDrop.DropEvent, OnDrop);
         AddHandler(DoubleTappedEvent, OnDoubleTapped);
         AddHandler(KeyDownEvent, OnKeyDown, RoutingStrategies.Tunnel);
@@ -166,7 +167,7 @@ public partial class CollectionsTreeView : UserControl
     {
         if (IsMenuPress(e.Source))
         {
-            _pressedNode = null;
+            _drag.Reset();
             return;
         }
 
@@ -174,81 +175,121 @@ public partial class CollectionsTreeView : UserControl
         var properties = e.GetCurrentPoint(this).Properties;
         if (node is not null && !node.IsEditing && properties.IsRightButtonPressed)
         {
-            _pressedNode = null;
+            _drag.Reset();
             OpenMenu(node, e.Source as Control);
             return;
         }
 
         if (node is null || node.IsEditing || IsExpanderPress(e.Source) || !properties.IsLeftButtonPressed)
         {
-            _pressedNode = null;
+            _drag.Reset();
             return;
         }
 
-        _pressedNode = node;
-        _pressArgs = e;
-        _pressPoint = e.GetPosition(this);
+        _drag.Press(node, e, e.GetPosition(this));
     }
 
     private async void OnPointerMoved(object? sender, PointerEventArgs e)
     {
-        if (_pressedNode is null || _pressArgs is null || !e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
+        if (!e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
         {
             return;
         }
 
-        var position = e.GetPosition(this);
-        if (Math.Abs(position.X - _pressPoint.X) < DragThreshold && Math.Abs(position.Y - _pressPoint.Y) < DragThreshold)
-        {
-            return;
-        }
-
-        var node = _pressedNode;
-        var pressArgs = _pressArgs;
-        _pressedNode = null;
-        _pressArgs = null;
-        await StartDragAsync(node, pressArgs);
+        await _drag.MoveAsync(e.GetPosition(this));
     }
 
     // A press that was released without a drag is a click. With the single-click setting on, it opens a request.
     private void OnPointerReleased(object? sender, PointerReleasedEventArgs e)
     {
-        var clicked = _pressedNode;
-        _pressedNode = null;
-        _pressArgs = null;
+        var clicked = _drag.Release();
         if (clicked is RequestNodeViewModel request && ViewModel is { OpensOnSingleClick: true } viewModel)
         {
             viewModel.OpenRequest(request.Id);
         }
     }
 
-    private static async Task StartDragAsync(TreeNodeViewModel node, PointerPressedEventArgs pressArgs)
-    {
-        var item = new DataTransferItem();
-        item.Set(NodeFormat, node);
-        var transfer = new DataTransfer();
-        transfer.Add(item);
-        await DragDrop.DoDragDropAsync(pressArgs, transfer, DragDropEffects.Move);
-    }
-
+    // A drop is allowed on any row, except a row inside the dragged node itself. The part of the row under the
+    // pointer says whether the node goes before it, inside it or after it, and the indicator shows which.
     private void OnDragOver(object? sender, DragEventArgs e)
     {
-        e.DragEffects = e.DataTransfer.Contains(NodeFormat) && NodeOf(e.Source) is not null
-            ? DragDropEffects.Move
-            : DragDropEffects.None;
+        e.DragEffects = DragDropEffects.None;
+        _dropIndicator.Hide();
+        var source = e.DataTransfer.TryGetValue(NodeFormat);
+        if (source is null || DropRow(e, source) is not { } row)
+        {
+            return;
+        }
+
+        e.DragEffects = DragDropEffects.Move;
+        ShowDropIndicator(row, PositionAt(e, row));
+    }
+
+    private void OnDragLeave(object? sender, DragEventArgs e)
+    {
+        _dropIndicator.Hide();
     }
 
     private async void OnDrop(object? sender, DragEventArgs e)
     {
-        var target = NodeOf(e.Source);
+        _dropIndicator.Hide();
         var source = e.DataTransfer.TryGetValue(NodeFormat);
-        if (target is null || source is null || ViewModel is null)
+        if (source is null || ViewModel is null || DropRow(e, source) is not { DataContext: TreeNodeViewModel target } row)
         {
             return;
         }
 
         e.Handled = true;
-        await ViewModel.MoveAsync(source, target);
+        await ViewModel.MoveAsync(source, target, PositionAt(e, row));
+    }
+
+    private static TreeViewItem? DropRow(DragEventArgs e, TreeNodeViewModel source)
+    {
+        var row = (e.Source as Visual)?.FindAncestorOfType<TreeViewItem>(includeSelf: true);
+        if (row?.DataContext is not TreeNodeViewModel target || !DropPlanner.CanDrop(source, target))
+        {
+            return null;
+        }
+
+        return row;
+    }
+
+    // The part of a row that shows its own content, without the rows of its children below it.
+    private static Grid? HeaderOf(TreeViewItem row)
+    {
+        return row.GetVisualDescendants().OfType<Grid>().FirstOrDefault(grid => grid.Name == "PART_Header");
+    }
+
+    private static DropPosition PositionAt(DragEventArgs e, TreeViewItem row)
+    {
+        if (row.DataContext is not TreeNodeViewModel target || HeaderOf(row) is not { } header)
+        {
+            return DropPosition.Inside;
+        }
+
+        var y = Math.Clamp(e.GetPosition(header).Y, 0, header.Bounds.Height);
+        return DropZones.Resolve(target, y, header.Bounds.Height);
+    }
+
+    private void ShowDropIndicator(TreeViewItem row, DropPosition position)
+    {
+        if (HeaderOf(row) is not { } header)
+        {
+            return;
+        }
+
+        switch (position)
+        {
+            case DropPosition.Before:
+                _dropIndicator.ShowHorizontalLine(header, atBottom: false);
+                break;
+            case DropPosition.After:
+                _dropIndicator.ShowHorizontalLine(header, atBottom: true);
+                break;
+            default:
+                _dropIndicator.ShowFrame(header);
+                break;
+        }
     }
 
     // With the single-click setting on, the first click has opened the request already.

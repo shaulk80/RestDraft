@@ -272,7 +272,7 @@ public sealed class CollectionsTreeViewModel : ViewModelBase
         await ReloadAsync(result.Value);
     }
 
-    public async Task MoveAsync(TreeNodeViewModel source, TreeNodeViewModel target)
+    public async Task MoveAsync(TreeNodeViewModel source, TreeNodeViewModel target, DropPosition position)
     {
         if (source.Id == target.Id)
         {
@@ -285,15 +285,19 @@ public sealed class CollectionsTreeViewModel : ViewModelBase
             return;
         }
 
-        var result = await _tree.MoveAsync(source.Id, target.DropFolderId, target.DropBeforeId, CancellationToken.None);
+        if (DropPlanner.Plan(source, target, position) is not { } plan)
+        {
+            return;
+        }
+
+        var result = await _tree.MoveAsync(source.Id, plan.TargetFolderId, plan.BeforeNodeId, CancellationToken.None);
         if (!result.IsSuccess)
         {
             StatusMessage = ErrorMessageFormatter.Format(result.Error!);
             return;
         }
 
-        var expandId = target.IsRequest ? target.DropFolderId : target.Id;
-        await ReloadAsync(source.Id, expandId);
+        await ReloadAsync(source.Id, plan.ExpandId);
     }
 
     // The keys also reach the tree while a rename box has focus, where Delete and Enter belong to the box.

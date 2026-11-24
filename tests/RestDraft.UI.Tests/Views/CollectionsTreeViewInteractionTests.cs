@@ -5,6 +5,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Headless;
 using Avalonia.Headless.NUnit;
 using Avalonia.Input;
+using Avalonia.Input.Raw;
 using FakeItEasy;
 using Avalonia.LogicalTree;
 using Avalonia.Threading;
@@ -12,6 +13,7 @@ using Avalonia.VisualTree;
 using NUnit.Framework;
 using RestDraft.Domain.Collections;
 using RestDraft.Domain.Results;
+using RestDraft.UI.Behaviors;
 using RestDraft.UI.Tests.ViewModels;
 using RestDraft.UI.ViewModels;
 using RestDraft.UI.Views;
@@ -21,6 +23,8 @@ namespace RestDraft.UI.Tests.Views;
 [TestFixture]
 public class CollectionsTreeViewInteractionTests
 {
+    private static readonly string[] FolderNames = ["A", "B", "C"];
+
     // The chevron is 12 px wide. Press near its left edge and move 5 px, which passes the drag
     // threshold but keeps the release inside the chevron.
     private const double PressOffsetFromCenter = -2;
@@ -481,6 +485,53 @@ public class CollectionsTreeViewInteractionTests
     }
 
     // Alpha has a child, so the keys that expand and collapse a row have something to do.
+    // Dragging "C" over "A": the top edge of the folder puts it in front of A, the middle inside A, the bottom edge behind A.
+    [TestCase(0.1, "dropLine", false)]
+    [TestCase(0.5, "dropFrame", true)]
+    [TestCase(0.9, "dropLine", false)]
+    [AvaloniaTest]
+    public async Task DropOnAFolderUsesThePartOfTheRowUnderThePointer(double fraction, string indicatorClass, bool inside)
+    {
+        var rootId = Guid.NewGuid();
+        var folders = FolderNames.Select(name => TreeFixtures.CreateFolder(name)).ToList();
+        var root = new Folder(rootId, string.Empty, folders, []);
+        var sidebar = await OpenSidebarAsync([new Collection(Guid.NewGuid(), "Shop", root)]);
+        A.CallTo(() => _fixtures.Tree.MoveAsync(A<Guid>._, A<Guid>._, A<Guid?>._, A<CancellationToken>._))
+            .Returns(Task.FromResult(Result.Success()));
+        ClickExpander(sidebar.Roots[0]);
+        var dragged = sidebar.Roots[0].Children[2];
+        var target = sidebar.Roots[0].Children[0];
+        var next = sidebar.Roots[0].Children[1];
+        var header = FindItem(target).GetVisualDescendants().OfType<Grid>().First(grid => grid.Name == "PART_Header");
+        var point = header.TranslatePoint(new Point(60, header.Bounds.Height * fraction), _window)!.Value;
+        var transfer = DragTransfer.Create(CollectionsTreeView.NodeFormat, dragged);
+        var indicator = _view.GetVisualDescendants().OfType<Border>().First(border => border.Name == "DropIndicatorBorder");
+
+        _window.DragDrop(point, RawDragEventType.DragEnter, transfer, DragDropEffects.Move, RawInputModifiers.None);
+        _window.DragDrop(point, RawDragEventType.DragOver, transfer, DragDropEffects.Move, RawInputModifiers.None);
+        Dispatcher.UIThread.RunJobs();
+        var shown = indicator.IsVisible && indicator.Classes.Contains(indicatorClass);
+        var shownMargin = indicator.Margin;
+        var origin = header.TranslatePoint(new Point(0, 0), _view.GetVisualDescendants().OfType<Grid>().First(grid => grid.Name == "ContentGrid"))!.Value;
+        _window.DragDrop(point, RawDragEventType.Drop, transfer, DragDropEffects.Move, RawInputModifiers.None);
+        await Task.Delay(50);
+        Dispatcher.UIThread.RunJobs();
+
+        Assert.That(shown, Is.True);
+        var expectedTop = inside ? origin.Y : fraction < 0.5 ? origin.Y - 1 : origin.Y + header.Bounds.Height - 1;
+        Assert.That(shownMargin.Left, Is.EqualTo(origin.X).Within(0.5));
+        Assert.That(shownMargin.Top, Is.EqualTo(expectedTop).Within(0.5));
+        Assert.That(indicator.IsVisible, Is.False);
+        var expectedFolder = inside ? target.Id : rootId;
+        Guid? expectedBefore = null;
+        if (!inside)
+        {
+            expectedBefore = fraction < 0.5 ? target.Id : next.Id;
+        }
+
+        A.CallTo(() => _fixtures.Tree.MoveAsync(dragged.Id, expectedFolder, expectedBefore, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
+    }
+
     private async Task<TextBox> StartRenamingAlphaAsync()
     {
         var alpha = TreeFixtures.CreateFolder("Alpha", [TreeFixtures.CreateFolder("Child")]);

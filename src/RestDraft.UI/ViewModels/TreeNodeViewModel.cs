@@ -50,7 +50,10 @@ public abstract class TreeNodeViewModel : ViewModelBase
         set => SetProperty(ref _isExpanded, value);
     }
 
-    public IReadOnlyList<TreeNodeViewModel> Children { get; protected set; } = [];
+    public IReadOnlyList<TreeNodeViewModel> Children { get; private set; } = [];
+
+    // The collection or folder that holds this node. A collection has none.
+    public TreeNodeViewModel? Parent { get; private set; }
 
     public abstract bool CanContainChildren { get; }
 
@@ -60,10 +63,8 @@ public abstract class TreeNodeViewModel : ViewModelBase
 
     public virtual bool IsFolder => false;
 
-    // Folder that receives a node dropped on this one, and the sibling to insert before (null appends).
+    // The folder that a node dropped inside this one goes into, and in which a new folder or request is created.
     public abstract Guid DropFolderId { get; }
-
-    public abstract Guid? DropBeforeId { get; }
 
     public ICommand RenameCommand { get; }
 
@@ -92,6 +93,15 @@ public abstract class TreeNodeViewModel : ViewModelBase
     public void EndRename()
     {
         IsEditing = false;
+    }
+
+    protected void SetChildren(IReadOnlyList<TreeNodeViewModel> children)
+    {
+        Children = children;
+        foreach (var child in children)
+        {
+            child.Parent = this;
+        }
     }
 
     protected static IReadOnlyList<TreeNodeViewModel> BuildChildren(CollectionsTreeViewModel owner, Folder folder)
