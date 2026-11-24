@@ -189,7 +189,7 @@ public class CollectionsTreeViewModelTests
         A.CallTo(() => _fixtures.Tree.MoveAsync(A<Guid>._, A<Guid>._, A<Guid?>._, A<CancellationToken>._))
             .Returns(Task.FromResult(Result.Success()));
 
-        await sidebar.MoveAsync(source, target);
+        await sidebar.MoveAsync(source, target, DropPosition.Inside);
 
         A.CallTo(() => _fixtures.Tree.MoveAsync(_fixtures.Login.Id, target.Id, null, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
     }
@@ -202,7 +202,7 @@ public class CollectionsTreeViewModelTests
         var collection = sidebar.Roots[0];
         var target = sidebar.Roots[0].Children.OfType<FolderNodeViewModel>().Single();
 
-        await sidebar.MoveAsync(collection, target);
+        await sidebar.MoveAsync(collection, target, DropPosition.Inside);
 
         Assert.That(sidebar.StatusMessage, Is.EqualTo("Collections cannot be moved."));
         A.CallTo(() => _fixtures.Tree.MoveAsync(A<Guid>._, A<Guid>._, A<Guid?>._, A<CancellationToken>._)).MustNotHaveHappened();

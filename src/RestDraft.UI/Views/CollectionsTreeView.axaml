@@ -5,7 +5,7 @@
              xmlns:controls="using:RestDraft.UI.Controls"
              x:Class="RestDraft.UI.Views.CollectionsTreeView"
              x:DataType="vm:CollectionsTreeViewModel">
-  <Grid>
+  <Grid x:Name="ContentGrid">
     <DockPanel Margin="8" LastChildFill="True">
       <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="4" Margin="0,0,0,8">
         <Button Classes="tool"
@@ -138,6 +138,8 @@
         </TreeView.DataTemplates>
       </controls:EditAwareTreeView>
     </DockPanel>
+    <!-- Shows where a dragged node will land. The view places and shows it while a drag is over the tree. -->
+    <Border x:Name="DropIndicatorBorder" />
     <!-- Not light-dismissable on purpose. Light dismiss swallows the first press outside the menu, so
          a right-click on another row would never reach the tree. The tree closes this menu itself. -->
     <Popup x:Name="MenuPopup"

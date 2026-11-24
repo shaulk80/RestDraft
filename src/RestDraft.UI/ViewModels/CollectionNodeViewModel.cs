@@ -10,7 +10,7 @@ public sealed class CollectionNodeViewModel : TreeNodeViewModel
         : base(owner, collection.Id, collection.Name)
     {
         _rootFolderId = collection.Root.Id;
-        Children = BuildChildren(owner, collection.Root);
+        SetChildren(BuildChildren(owner, collection.Root));
     }
 
     public override bool CanContainChildren => true;
@@ -18,6 +18,4 @@ public sealed class CollectionNodeViewModel : TreeNodeViewModel
     public override bool IsCollection => true;
 
     public override Guid DropFolderId => _rootFolderId;
-
-    public override Guid? DropBeforeId => null;
 }

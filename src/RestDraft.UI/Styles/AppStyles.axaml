@@ -88,6 +88,14 @@
   <Style Selector="TreeView, ListBox">
     <Setter Property="ScrollViewer.AllowAutoHide" Value="False" />
   </Style>
+  <!-- The mark that shows where a dragged node or tab will land: a line between two items, or a frame around one. -->
+  <Style Selector="Border.dropLine">
+    <Setter Property="Background" Value="{DynamicResource SystemControlHighlightAccentBrush}" />
+  </Style>
+  <Style Selector="Border.dropFrame">
+    <Setter Property="BorderBrush" Value="{DynamicResource SystemControlHighlightAccentBrush}" />
+    <Setter Property="BorderThickness" Value="2" />
+  </Style>
   <!-- Small buttons with a line icon (a Path) and a tooltip, such as the ones above the tree and under the environments. -->
   <Style Selector="Button.tool">
     <Setter Property="Padding" Value="6,3" />
