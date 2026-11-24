@@ -5,6 +5,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
+using RestDraft.UI.Behaviors;
 using RestDraft.UI.Services;
 using RestDraft.UI.ViewModels;
 using RestDraft.UI.Views;
@@ -21,6 +22,7 @@ public partial class MainWindow : Window
     private readonly TextEditTarget _editTarget = new();
     private readonly SearchPopupView _searchPopup = new();
     private readonly Flyout _searchFlyout = new();
+    private readonly TabReorder _tabReorder;
     private MainWindowViewModel? _viewModel;
     private bool _tabsStored;
     private Size _normalSize;
@@ -28,6 +30,7 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+        _tabReorder = new TabReorder(OpenRequestTabs, () => _viewModel?.TabStrip, new DropIndicator(TabDropIndicatorBorder, RequestArea));
         _normalSize = new Size(Width, Height);
         // The size to remember is the one of the normal window, so a maximized size never replaces it.
         SizeChanged += OnWindowSizeChanged;

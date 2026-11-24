@@ -167,6 +167,24 @@ public sealed class TabStripViewModel : ViewModelBase
         return true;
     }
 
+    // Puts a tab at a new place in the strip, as the user drags it. The selection stays on the tab that was selected,
+    // and the new order is stored with the other changes of the strip. An index outside the strip changes nothing.
+    public void MoveTab(RequestTabViewModel tab, int newIndex)
+    {
+        var oldIndex = Tabs.IndexOf(tab);
+        if (oldIndex < 0 || newIndex < 0 || newIndex >= Tabs.Count || newIndex == oldIndex)
+        {
+            return;
+        }
+
+        var selected = SelectedTab;
+        Tabs.Move(oldIndex, newIndex);
+        if (SelectedTab != selected)
+        {
+            SelectedTab = selected;
+        }
+    }
+
     // Opens the stored tabs. Storing starts only after this, so a tab the user opens meanwhile cannot replace them.
     public async Task RestoreAsync()
     {

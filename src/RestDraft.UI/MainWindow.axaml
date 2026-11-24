@@ -158,9 +158,10 @@
                     IsVisible="{Binding Layout.IsSidebarVisible}"
                     DragCompleted="OnSidebarSplitterDragCompleted"
                     AutomationProperties.Name="Resize the Collections panel" />
-      <Grid Grid.Column="2" RowDefinitions="Auto,*">
+      <Grid x:Name="RequestArea" Grid.Column="2" RowDefinitions="Auto,*">
         <!-- Only the headers: the selected request is shown below, so the URL bar can span the response too. -->
-        <TabControl Grid.Row="0"
+        <TabControl x:Name="OpenRequestTabs"
+                    Grid.Row="0"
                     ItemsSource="{Binding TabStrip.Tabs}"
                     SelectedItem="{Binding TabStrip.SelectedTab}"
                     AutomationProperties.Name="Open requests">
@@ -182,6 +183,8 @@
             </DataTemplate>
           </TabControl.ContentTemplate>
         </TabControl>
+        <!-- Shows where a dragged tab will go. TabReorder places and shows it while a tab is dragged over the strip. -->
+        <Border x:Name="TabDropIndicatorBorder" Grid.Row="0" />
         <TextBlock Grid.Row="1"
                    Margin="12"
                    VerticalAlignment="Top"
