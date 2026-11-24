@@ -32,8 +32,7 @@ v0.1.1 assets: zip `df389225b6bc39757e006cae2ca0f6761f9ce0019e96f7ae1f7f8a3f7d98
 ## Open
 
 - **Code signing:** SignPath Foundation declined (2026-10, not enough public visibility; a paid subscription was declined by the owner). Reapply when the project has stars, forks, contributors and external mentions. If approved: SignPath GitHub Action in CI, MFA on the SignPath account, version without the `+<hash>` suffix, README policy wording (see the archive, M10).
-- **Not verified for 0.3.0:** Smart App Control and SmartScreen with the folder package and its DLLs (portability checklist section 3); clicking through the import and export file dialogs on Windows and on Linux; the filter popup on Linux; opening an exported file in Insomnia itself.
-- **Found in use of 0.3.0 (2026-11-24), plan in `docs/tree-and-tabs-fixes-plan.md`:** fixed on `main`, not released: numpad keys in the tree's rename box, tree rows under the thin scrollbar, indent of empty rows. Done on branch `feat/reorder-tabs-and-folders`: reorder of tabs and folders by dragging. Not tried by hand yet: the real drag with the mouse (the headless tests cannot start a drag).
+- **Found in use of 0.3.0 (2026-11-24), plan in `docs/tree-and-tabs-fixes-plan.md`:** fixed on `main`, not released: numpad keys in the tree's rename box, tree rows under the thin scrollbar, indent of empty rows. Done on branch `feat/reorder-tabs-and-folders` (pull request not merged yet): reorder of tabs and folders by dragging, tried by hand with the mouse and working. A release with these fixes (`0.3.1` or `0.4.0`) is for the owner to decide.
 - **Backlog:** the known limitations in `RELEASE_NOTES.md` (0.1.0 section), and anything new. No issues are filed yet; GitHub Issues is the place for them.
 
 ## How things are set up
@@ -43,6 +42,7 @@ v0.1.1 assets: zip `df389225b6bc39757e006cae2ca0f6761f9ce0019e96f7ae1f7f8a3f7d98
 - **Build policy:** no `TreatWarningsAsErrors`. Nullable warnings and the rules listed in `.editorconfig` fail the build; other analyzer findings are warnings. Reason: the Linux job takes the newest 10.0.x SDK, and its new rule CA2027 broke the build of unchanged code (2026-11-13).
 - **Coverage:** a warning below 80% for Domain and Application; never fails a build.
 - **Verified:** the Windows build (portability checklist section 1), accessibility, Smart App Control (section 3), and Linux on Ubuntu 24.04 under WSL2 (section 5, 13 checks passed).
+- **Verified for 0.3.0 by hand (2026-11-24):** Smart App Control and SmartScreen with the folder package and its DLLs; the import and export file dialogs on Windows and on Linux (Ubuntu 24.04 under WSL2, not a full Linux desktop); the filter popup on Linux (same WSL2 setup); an exported file opened in Insomnia itself. All worked as expected.
 - **Not verified:** a full Linux desktop and other distributions; signing.
 
 ## Decisions worth remembering
