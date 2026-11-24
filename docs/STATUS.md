@@ -1,6 +1,6 @@
 # RestDraft: status
 
-Updated: 2026-11-18. Keep this file short and current. The old milestone log is in `history/implementation-progress-M0-M11.txt`.
+Updated: 2026-11-24. Keep this file short and current. The old milestone log is in `history/implementation-progress-M0-M11.txt`.
 
 ## Now
 
@@ -33,7 +33,7 @@ v0.1.1 assets: zip `df389225b6bc39757e006cae2ca0f6761f9ce0019e96f7ae1f7f8a3f7d98
 
 - **Code signing:** SignPath Foundation declined (2026-10, not enough public visibility; a paid subscription was declined by the owner). Reapply when the project has stars, forks, contributors and external mentions. If approved: SignPath GitHub Action in CI, MFA on the SignPath account, version without the `+<hash>` suffix, README policy wording (see the archive, M10).
 - **Not verified for 0.3.0:** Smart App Control and SmartScreen with the folder package and its DLLs (portability checklist section 3); clicking through the import and export file dialogs on Windows and on Linux; the filter popup on Linux; opening an exported file in Insomnia itself.
-- **Found in use of 0.3.0 (2026-11-24), planned in `docs/tree-and-tabs-fixes-plan.md`, not started:** numpad `-` `/` `*` in the tree's rename box go to the tree; tabs cannot be reordered by dragging; tree rows run under the thin scrollbar; empty folders and requests have no indent; folders cannot be reordered (a drop on a folder always nests).
+- **Found in use of 0.3.0 (2026-11-24), plan in `docs/tree-and-tabs-fixes-plan.md`:** fixed on `main`, not released: numpad keys in the tree's rename box, tree rows under the thin scrollbar, indent of empty rows. Done on branch `feat/reorder-tabs-and-folders`: reorder of tabs and folders by dragging. Not tried by hand yet: the real drag with the mouse (the headless tests cannot start a drag).
 - **Backlog:** the known limitations in `RELEASE_NOTES.md` (0.1.0 section), and anything new. No issues are filed yet; GitHub Issues is the place for them.
 
 ## How things are set up

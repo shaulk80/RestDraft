@@ -1,6 +1,6 @@
 # Collections tree and request tabs: issues and fix plan
 
-Status: draft (2026-11-24), nothing implemented. Found by hand on version 0.3.0. The screenshots are `C:\Vibe\z_tmp\scrollbar.png` and `C:\Vibe\z_tmp\indent.png` (not in the repository).
+Status (2026-11-24): issues 1, 3 and 4 are fixed (pull request A, merged); issues 2 and 5 are implemented on branch `feat/reorder-tabs-and-folders` (pull request B). Found by hand on version 0.3.0. The screenshots are `C:\Vibe\z_tmp\scrollbar.png` and `C:\Vibe\z_tmp\indent.png` (not in the repository).
 
 ## 1. Issues
 
@@ -92,6 +92,14 @@ Folder reorder (issue 5):
 5. Tests: unit tests for the position to (folder, before) mapping, parameterized over target kind and position, including last sibling, only child, collapsed folder, and the folder-first rule. An application test that moving a folder before and after a sibling folder keeps the order after a reload. A headless drag test: dropping at the top edge of a folder reorders, dropping in the middle nests.
 
 Manual check before reporting done: reorder folders and requests, nest and un-nest, drag a tab and restart the app to see the order kept.
+
+Implemented on branch `feat/reorder-tabs-and-folders` (2026-11-24). What differs from the plan, or was added while building it:
+
+- Tree nodes know their parent (`TreeNodeViewModel.Parent`), and `DropBeforeId` is gone. `DropPlanner` (drop position to target folder and sibling), `DropZones` (pointer height in a row to a position) and `DropPlan` are pure view-model classes with unit tests. A drop that leaves the node where it is does nothing and does not reload the tree. A drop into the dragged node's own subtree gets the "not allowed" cursor and is ignored (the service still refuses it too).
+- The bottom edge of an open folder that has children means "inside" and not "after", because the row below it is its first child. A collapsed or empty folder has the bottom edge as "after".
+- Shared code: `DragStarter<T>` (press, threshold, start the drag; used by the tree and the tab strip), `DragTransfer`, `DropIndicator` (a line or a frame drawn as an overlay), and the `dropLine` and `dropFrame` styles in `AppStyles.axaml`.
+- Tabs: `TabStripViewModel.MoveTab`, `TabDropIndex` (the index after the dragged tab leaves its place), and `TabReorder` (the strip's drag and drop, wired in `MainWindow`). A real `TabControl` drops the selection when the selected tab moves, so `MoveTab` puts it back (a test fails without it).
+- Tests: a headless drag needs a `DragEnter` before the `DragOver` and `Drop`. The start of a drag (press, move, `DoDragDropAsync`) has no headless platform source, so it is not tested: it is part of the manual check.
 
 ## 4. Decisions made here (change if wrong)
 
