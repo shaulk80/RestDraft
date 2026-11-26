@@ -100,6 +100,7 @@ Implemented on branch `feat/reorder-tabs-and-folders` (2026-11-24). What differs
 - Shared code: `DragStarter<T>` (press, threshold, start the drag; used by the tree and the tab strip), `DragTransfer`, `DropIndicator` (a line or a frame drawn as an overlay), and the `dropLine` and `dropFrame` styles in `AppStyles.axaml`.
 - Tabs: `TabStripViewModel.MoveTab`, `TabDropIndex` (the index after the dragged tab leaves its place), and `TabReorder` (the strip's drag and drop, wired in `MainWindow`). A real `TabControl` drops the selection when the selected tab moves, so `MoveTab` puts it back (a test fails without it).
 - Tests: a headless drag needs a `DragEnter` before the `DragOver` and `Drop`. The start of a drag (press, move, `DoDragDropAsync`) has no headless platform source, so it is not tested: it is part of the manual check.
+- Manual check done by the owner on 2026-11-24 (real mouse drag of tabs, folders and requests): works as expected.
 
 ## 4. Decisions made here (change if wrong)
 

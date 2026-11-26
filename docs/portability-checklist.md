@@ -54,6 +54,8 @@ Machine / VM: ______________________  Build: ______________  Date: ____________
 | 2 | Unzip and run `RestDraft.exe` | Record exactly what happens: runs, SmartScreen prompt, or blocked. All the DLLs carry the mark of the web too: record whether any is blocked (the window opens and renders text, and requests work) | |
 | 3 | If it is blocked: **stop and revisit signing (Q7 in ARCHITECTURE_PLAN.md) before the release** | | |
 
+Result for the 0.3.0 folder package (exe + DLLs): checked by the owner and works as expected, reported on 2026-11-24. Machine, build and the exact behavior were not recorded.
+
 ## 4. Before the first public release (plan M8 task 4)
 
 - [x] Apply to SignPath Foundation (Q7). Outcome: **declined** (answer received by 2026-10-31): the project does not yet show enough public visibility (stars, forks, contributors, articles, discussions). Reapply when it does. The owner declined the paid subscription.
@@ -91,7 +93,7 @@ Findings:
 
 ### Import and export (to check on a Linux desktop)
 
-File > Import... and File > Export... use the system file dialogs of Avalonia (`StorageProvider`). Not tested on Linux yet. Check: the open dialog shows `*.yaml` and `*.yml` files, the save dialog proposes `<collection name>.yaml` and asks before it overwrites, and a file written to a folder without permission gives a message instead of an error.
+File > Import... and File > Export... use the system file dialogs of Avalonia (`StorageProvider`). Checked by the owner with 0.3.0 on Windows and on Linux under WSL2 (same Ubuntu 24.04 setup as above, not a full Linux desktop) and works as expected, reported on 2026-11-24. The checks were: the open dialog shows `*.yaml` and `*.yml` files, the save dialog proposes `<collection name>.yaml` and asks before it overwrites, and a file written to a folder without permission gives a message instead of an error.
 
 ### Re-check of the exe + DLLs package (2026-11-18)
 
