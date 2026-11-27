@@ -3,13 +3,16 @@
              xmlns:vm="using:RestDraft.UI.ViewModels"
              xmlns:domain="using:RestDraft.Domain.Collections"
              xmlns:controls="using:RestDraft.UI.Controls"
+             xmlns:views="using:RestDraft.UI.Views"
              x:Class="RestDraft.UI.Views.ResponseView"
              x:DataType="vm:RequestTabViewModel">
-  <!-- From the top: the Pretty and Raw switch (a thin bar), the body, and the rest of the response below a splitter. -->
+  <!-- From the top: the Pretty and Raw switch (a thin bar), the search panel when it is open, the body, and the rest of
+       the response below a splitter. -->
   <!-- A splitter honors only the minimum of a row definition, not the MinHeight of the content. Without these two
        minimums the splitter could be dragged to the bottom edge, where it cannot be grabbed again. -->
   <Grid>
     <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
       <RowDefinition Height="Auto" />
       <RowDefinition Height="*" MinHeight="80" />
       <RowDefinition Height="Auto" />
@@ -31,21 +34,23 @@
                      IsChecked="{Binding Response.IsRawView}" />
       </StackPanel>
     </Border>
-    <Border Grid.Row="1" Classes="panel" BorderThickness="0,0,0,1" MinHeight="80">
-      <controls:CodeEditor EditorText="{Binding Response.BodyText}"
+    <views:ResponseSearchView x:Name="FindPanel" Grid.Row="1" DataContext="{Binding Response.Search}" />
+    <Border Grid.Row="2" Classes="panel" BorderThickness="0,0,0,1" MinHeight="80">
+      <controls:CodeEditor x:Name="BodyViewer"
+                           EditorText="{Binding Response.BodyText}"
                            Language="{Binding Response.Language}"
                            IsReadOnly="True"
                            WordWrap="True"
                            VerticalScrollBarVisibility="Visible"
                            AutomationProperties.Name="Response body" />
     </Border>
-    <GridSplitter Grid.Row="2"
+    <GridSplitter Grid.Row="3"
                   Height="6"
                   ResizeDirection="Rows"
                   HorizontalAlignment="Stretch"
                   AutomationProperties.Name="Resize the response details" />
     <!-- Status, timing, size and headers. A line with no text is hidden, so an empty response leaves no gap. -->
-    <ScrollViewer Grid.Row="3" MinHeight="40">
+    <ScrollViewer Grid.Row="4" MinHeight="40">
       <StackPanel Margin="8" Spacing="4">
         <TextBlock Text="{Binding Response.ErrorMessage}"
                    IsVisible="{Binding Response.ErrorMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"

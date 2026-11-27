@@ -10,6 +10,9 @@
       <StreamGeometry x:Key="CollectionIconData">M8,1.5 L14.5,4.5 L8,7.5 L1.5,4.5 Z M1.5,8 L8,11 L14.5,8 M1.5,11 L8,14 L14.5,11</StreamGeometry>
       <StreamGeometry x:Key="FolderIconData">M1.5,3.5 H6 L7.5,5 H14.5 V12.5 H1.5 Z</StreamGeometry>
       <StreamGeometry x:Key="FilterIconData">M1.5,2.5 H14.5 L9.5,8.5 V13.5 L6.5,12 V8.5 Z</StreamGeometry>
+      <StreamGeometry x:Key="PreviousIconData">M3,10.5 L8,5.5 L13,10.5</StreamGeometry>
+      <StreamGeometry x:Key="NextIconData">M3,5.5 L8,10.5 L13,5.5</StreamGeometry>
+      <StreamGeometry x:Key="CloseIconData">M4,4 L12,12 M12,4 L4,12</StreamGeometry>
       <ResourceDictionary.ThemeDictionaries>
         <!-- Message colors with at least 4.5:1 contrast on the window background in each theme. -->
         <ResourceDictionary x:Key="Light">
@@ -17,11 +20,18 @@
           <SolidColorBrush x:Key="WarningTextBrush" Color="#8A5A00" />
           <!-- Borders of panels, controls and tab headers. At least 3:1 against the window background. -->
           <SolidColorBrush x:Key="PanelBorderBrush" Color="#8C8C8C" />
+          <!-- Search matches in a response, painted behind the text. The current match also has a border. -->
+          <SolidColorBrush x:Key="SearchMatchBrush" Color="#FFF1A6" />
+          <SolidColorBrush x:Key="SearchCurrentMatchBrush" Color="#FFD27F" />
+          <SolidColorBrush x:Key="SearchCurrentMatchBorderBrush" Color="#9A4D00" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="Dark">
           <SolidColorBrush x:Key="ErrorTextBrush" Color="#FF8A80" />
           <SolidColorBrush x:Key="WarningTextBrush" Color="#FFCC66" />
           <SolidColorBrush x:Key="PanelBorderBrush" Color="#7A7A7A" />
+          <SolidColorBrush x:Key="SearchMatchBrush" Color="#4A3C00" />
+          <SolidColorBrush x:Key="SearchCurrentMatchBrush" Color="#6B3A00" />
+          <SolidColorBrush x:Key="SearchCurrentMatchBorderBrush" Color="#FFB454" />
         </ResourceDictionary>
       </ResourceDictionary.ThemeDictionaries>
     </ResourceDictionary>
@@ -80,6 +90,11 @@
   <Style Selector="Button, TextBox, ComboBox">
     <Setter Property="BorderBrush" Value="{DynamicResource PanelBorderBrush}" />
     <Setter Property="BorderThickness" Value="1" />
+  </Style>
+  <!-- A search box without a match. The counter beside it says "0 of 0", so the color is not the only sign. -->
+  <Style Selector="TextBox.noMatch /template/ Border#PART_BorderElement">
+    <Setter Property="BorderBrush" Value="{DynamicResource ErrorTextBrush}" />
+    <Setter Property="BorderThickness" Value="2" />
   </Style>
   <!-- The scroll bar of a code editor stays in view instead of fading out, so it is clear that the text scrolls. -->
   <Style Selector="ae|TextEditor /template/ ScrollViewer">
