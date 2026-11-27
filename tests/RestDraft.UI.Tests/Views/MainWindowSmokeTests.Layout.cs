@@ -414,7 +414,7 @@ public partial class MainWindowSmokeTests
 
     private static RowDefinition DetailsRow(ResponseView response)
     {
-        return response.GetVisualDescendants().OfType<Grid>().First().RowDefinitions[3];
+        return response.GetVisualDescendants().OfType<Grid>().First().RowDefinitions[4];
     }
 
     private void DragSplitterBy(GridSplitter splitter, double deltaY)

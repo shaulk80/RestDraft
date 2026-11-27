@@ -210,7 +210,7 @@
             <Border Grid.Column="2"
                     Classes="panel"
                     IsVisible="{Binding Layout.IsResponseVisible}">
-              <views:ResponseView DataContext="{Binding TabStrip.SelectedTab}" />
+              <views:ResponseView x:Name="ResponsePane" DataContext="{Binding TabStrip.SelectedTab}" />
             </Border>
           </Grid>
         </Grid>

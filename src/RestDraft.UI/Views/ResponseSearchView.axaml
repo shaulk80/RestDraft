@@ -1,0 +1,64 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:RestDraft.UI.ViewModels"
+             x:Class="RestDraft.UI.Views.ResponseSearchView"
+             x:DataType="vm:ResponseSearchViewModel"
+             IsVisible="{Binding IsOpen, FallbackValue=False}">
+  <UserControl.Styles>
+    <!-- The panel is a thin bar above the body, so its controls are smaller than the default. -->
+    <Style Selector="CheckBox">
+      <Setter Property="MinWidth" Value="0" />
+      <Setter Property="MinHeight" Value="24" />
+      <Setter Property="FontSize" Value="12" />
+    </Style>
+    <Style Selector="TextBox">
+      <Setter Property="MinHeight" Value="24" />
+      <Setter Property="Padding" Value="6,2" />
+      <Setter Property="FontSize" Value="12" />
+    </Style>
+    <Style Selector="TextBlock">
+      <Setter Property="FontSize" Value="12" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+  </UserControl.Styles>
+  <Border Classes="panel" BorderThickness="0,0,0,1" Padding="8,2">
+    <StackPanel Spacing="2">
+      <!-- Wraps, because the response panel can be narrow. -->
+      <WrapPanel ItemSpacing="6" LineSpacing="2">
+        <TextBlock Text="Find" />
+        <TextBox x:Name="QueryBox"
+                 Width="180"
+                 Text="{Binding Query}"
+                 Classes.noMatch="{Binding HasNoMatch}"
+                 AutomationProperties.Name="Find in response" />
+        <TextBlock MinWidth="56"
+                   Text="{Binding CounterText}"
+                   AutomationProperties.LiveSetting="Polite" />
+        <Button Classes="tool"
+                Command="{Binding PreviousCommand}"
+                ToolTip.Tip="Previous match (Shift+F3)"
+                AutomationProperties.Name="Previous match">
+          <Path Data="{DynamicResource PreviousIconData}" />
+        </Button>
+        <Button Classes="tool"
+                Command="{Binding NextCommand}"
+                ToolTip.Tip="Next match (F3)"
+                AutomationProperties.Name="Next match">
+          <Path Data="{DynamicResource NextIconData}" />
+        </Button>
+        <CheckBox Content="Match case" IsChecked="{Binding MatchCase}" />
+        <CheckBox Content="Whole word" IsChecked="{Binding WholeWord}" />
+        <Button Classes="tool"
+                Command="{Binding CloseCommand}"
+                ToolTip.Tip="Close (Escape)"
+                AutomationProperties.Name="Close search">
+          <Path Data="{DynamicResource CloseIconData}" />
+        </Button>
+      </WrapPanel>
+      <TextBlock Text="{Binding TruncationNote}"
+                 IsVisible="{Binding TruncationNote, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                 FontStyle="Italic"
+                 TextWrapping="Wrap" />
+    </StackPanel>
+  </Border>
+</UserControl>

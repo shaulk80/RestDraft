@@ -21,11 +21,14 @@ public sealed class ResponseViewModel : ViewModelBase
     private string _rawBody = string.Empty;
     private string? _prettyBody;
     private bool _isPrettyView;
+    private bool _isPreviewTruncated;
 
     public ResponseViewModel(BodyFormatting formatting)
     {
         _formatting = formatting;
     }
+
+    public ResponseSearchViewModel Search { get; } = new();
 
     public string StatusText
     {
@@ -105,6 +108,7 @@ public sealed class ResponseViewModel : ViewModelBase
         SizeText = $"{snapshot.BodySizeBytes} bytes";
         Headers = snapshot.Headers;
         _rawBody = snapshot.BodyPreview;
+        _isPreviewTruncated = snapshot.IsPreviewTruncated;
         Language = EditorLanguageMapper.Map(FindContentType(snapshot.Headers), Encoding.UTF8.GetByteCount(_rawBody));
         var pretty = PrettyPrint(Language, _rawBody);
         _prettyBody = pretty.Value;
@@ -128,6 +132,7 @@ public sealed class ResponseViewModel : ViewModelBase
         Headers = [];
         _rawBody = string.Empty;
         _prettyBody = null;
+        _isPreviewTruncated = false;
         RaisePropertyChanged(nameof(CanPrettyPrint));
         Language = EditorLanguage.PlainText;
         BodyNote = string.Empty;
@@ -138,6 +143,7 @@ public sealed class ResponseViewModel : ViewModelBase
     private void UpdateBodyText()
     {
         BodyText = IsPrettyView && _prettyBody is not null ? _prettyBody : _rawBody;
+        Search.SetText(BodyText, _isPreviewTruncated);
     }
 
     private PrettyResult PrettyPrint(EditorLanguage language, string body)

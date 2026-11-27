@@ -9,6 +9,7 @@ RestDraft - a REST API client. A desktop application for Windows and Linux (x64)
 - Requests with any method, URL, query parameters, headers, body and authorization. Parameters and headers are rows that can be switched on and off. Bodies can be raw text (JSON and XML are highlighted and can be formatted), form-urlencoded, or multipart with files.
 - Authorization: Basic, Bearer token, and API key (in a header or in the query).
 - Responses show status, timing, size, headers, and a body that can be viewed pretty-printed or raw. Large bodies are kept on disk, and the first 1 MB is shown.
+- Search in the response: Ctrl+F in the response body opens a panel above it, with Match case and Whole word. All matches are highlighted, F3 and Shift+F3 step through them, and Escape closes the panel with the current match selected. Each tab keeps its own search. Only the shown text is searched, so for a large body only the preview.
 - Collections with folders and subfolders. Drag and drop to move items. A new request is named in the tree as soon as it is created, and Enter or Escape then moves on to its URL.
 - View > Track active request selects the request of the active tab in the Collections tree, opening the folders above it. It is off by default and remembered.
 - Filter for the Collections tree and for the History, from the funnel button at the left of the top bar: text (names and URLs), method, and optionally the request bodies. Each tab keeps its own filter, and the funnel is filled while one is applied.
@@ -112,11 +113,14 @@ This program will not transfer any information to other networked systems unless
 | Ctrl+Shift+S | Save all changed tabs. A tab that is not in a collection yet asks for a folder and a name. Cancel stops the rest |
 | Ctrl+T | Open a new tab |
 | Ctrl+F4 | Close the active tab |
-| Ctrl+F | Open the filter popup of the Collections or History tab, whichever is shown, even when the bar at the top is hidden |
+| Ctrl+F | In the response body or its search panel: search the response. Anywhere else: open the filter popup of the Collections or History tab, whichever is shown, even when the bar at the top is hidden |
+| F3 / Shift+F3 | In the response body or its search panel: next / previous match. In the body with the panel closed, it opens the panel with the text searched last |
+| Enter / Shift+Enter | In the search box of the response: next / previous match |
+| Esc | While the search panel of the response is open, in the panel or the response body: close it and select the current match |
 | Ctrl+Tab / Ctrl+Shift+Tab | Switch the request tabs in the order they were last used. Keep Ctrl down to go further back. Other tabs (Collections, History, Body, Params, and so on) are not affected |
 | F2 / Delete / Enter | In the Collections tree: rename, delete, or open the selected item |
 | Shift+F10 or the Menu key | In the Collections tree: open the context menu. Esc closes it |
-| Esc / Shift+Esc | In a text editor (request or response body): move focus to the next / previous control. Tab types a tab character there |
+| Esc / Shift+Esc | In a text editor (request or response body): move focus to the next / previous control. Tab types a tab character there. In the response body with the search panel open, Esc closes the panel first |
 | Esc / Enter | In dialogs: cancel / confirm (Enter does not confirm a delete) |
 
 ## Known limitations

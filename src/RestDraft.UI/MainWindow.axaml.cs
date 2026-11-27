@@ -236,11 +236,16 @@ public partial class MainWindow : Window
 
     private void OnPreviewKeyDown(object? sender, KeyEventArgs e)
     {
-        // Taken here too, so a text box or the code editor cannot keep Ctrl+F for itself.
+        // Taken here too, so a text box or the code editor cannot keep Ctrl+F for itself. In the response body it
+        // searches the response; anywhere else it opens the filter.
         if (e.Key == Key.F && e.KeyModifiers == KeyModifiers.Control)
         {
             e.Handled = true;
-            ShowSearchPopup();
+            if (!ResponsePane.TryOpenSearch())
+            {
+                ShowSearchPopup();
+            }
+
             return;
         }
 
