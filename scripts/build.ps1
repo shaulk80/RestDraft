@@ -31,6 +31,7 @@ $coverageTargets = @{
 }
 
 . (Join-Path $PSScriptRoot 'CoverageReport.ps1')
+. (Join-Path $PSScriptRoot 'NuGetPackages.ps1')
 . (Join-Path $PSScriptRoot 'LicenseCheck.ps1')
 . (Join-Path $PSScriptRoot 'Checksums.ps1')
 
