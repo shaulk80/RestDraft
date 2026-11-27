@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- RestDraft's highlighting of JSON. The colors have no values here: SyntaxTheme gives them per theme. -->
+<SyntaxDefinition name="Json" xmlns="http://icsharpcode.net/sharpdevelop/syntaxdefinition/2008">
+  <Color name="Key" />
+  <Color name="String" />
+  <Color name="Number" />
+  <Color name="Constant" />
+
+  <!-- Every rule matches within one line and no state is carried over, because a JSON string cannot span lines. So a
+       minified body is highlighted like a formatted one. Where two rules match at the same place, the first one wins. -->
+  <RuleSet>
+    <!-- A string followed by a colon is a key. -->
+    <Rule color="Key">"[^"\\]*(?:\\.[^"\\]*)*"(?=\s*:)</Rule>
+    <!-- The closing quote is optional, so a string that is still being typed, or is cut off, is colored too. -->
+    <Rule color="String">"[^"\\]*(?:\\.[^"\\]*)*"?</Rule>
+    <Keywords color="Constant">
+      <Word>true</Word>
+      <Word>false</Word>
+      <Word>null</Word>
+    </Keywords>
+    <Rule color="Number">-?\b\d+(?:\.\d+)?(?:[eE][+-]?\d+)?\b</Rule>
+  </RuleSet>
+</SyntaxDefinition>

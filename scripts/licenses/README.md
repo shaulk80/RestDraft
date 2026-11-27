@@ -33,7 +33,6 @@ Checked on 2026-11-27. Repeat at every upgrade of the package.
 | Avalonia.Angle.Windows.Natives 2.1.27548.20260419 | The package carries the ANGLE license. xxHash is compiled in (`src/common/third_party/xxhash` of the Avalonia fork). Other libraries of the ANGLE tree were not verified against the binaries. |
 | Avalonia.AvaloniaEdit 12.0.0 | Ported from AvalonEdit: the source files keep its copyright header. |
 | SQLitePCLRaw.lib.e_sqlite3 2.1.13 | The native library is SQLite, which is public domain. |
-| Onigwrap 1.0.10 | Oniguruma is covered by the notices file in the package, so there is no entry. |
 | SkiaSharp and HarfBuzzSharp native assets | Their notices file covers the native libraries, so there is no entry. |
-| TextMateSharp 2.0.3 | Its README says it is a port of `microsoft/vscode-textmate` and that the implementation is based on the Java project `eclipse/tm4e` (EPL-2.0), while the package declares MIT only. |
-| TextMateSharp.Grammars 2.0.3 | The resources of the DLL. Each grammar folder has a `cgmanifest.json` naming its source project, commit and license; its `licenseDetail`, else the license file at that commit, is in `bundled/textmate-grammars.txt`. Files without another source come from Visual Studio Code. The themes: the `cgmanifest.json` files of the theme extensions of Visual Studio Code name the Colorsublime collection; six themes were added by TextMateSharp. |
+
+The checks looked at the files of a package, the resources of its DLLs and what its project says about itself. They did not search the source trees for code copied from other projects.

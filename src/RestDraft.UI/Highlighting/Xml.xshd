@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- RestDraft's highlighting of XML. The colors have no values here: SyntaxTheme gives them per theme.
+     The text of a rule ignores white space, and an unescaped number sign starts a comment. -->
+<SyntaxDefinition name="Xml" xmlns="http://icsharpcode.net/sharpdevelop/syntaxdefinition/2008">
+  <Color name="Comment" />
+  <Color name="Delimiter" />
+  <Color name="TagName" />
+  <Color name="AttributeName" />
+  <Color name="AttributeValue" />
+  <Color name="CData" />
+  <Color name="Entity" />
+  <Color name="BrokenEntity" />
+
+  <!-- Where two of these start at the same place, the first one wins, so a comment is not read as a tag. -->
+  <RuleSet>
+    <Span color="Comment" multiline="true">
+      <Begin>&lt;!--</Begin>
+      <End>--&gt;</End>
+    </Span>
+    <Span color="CData" multiline="true">
+      <Begin color="Delimiter">&lt;!\[CDATA\[</Begin>
+      <End color="Delimiter">\]\]&gt;</End>
+    </Span>
+    <!-- A tag, a processing instruction such as the XML declaration, or a declaration such as DOCTYPE. -->
+    <Span multiline="true" ruleSet="Tag">
+      <Begin color="Delimiter">&lt;[?!/]?</Begin>
+      <End color="Delimiter">[?/]?&gt;</End>
+    </Span>
+    <Import ruleSet="Entities" />
+  </RuleSet>
+
+  <RuleSet name="Tag">
+    <Span color="AttributeValue" multiline="true" ruleSet="Entities">
+      <Begin>"</Begin>
+      <End>"</End>
+    </Span>
+    <Span color="AttributeValue" multiline="true" ruleSet="Entities">
+      <Begin>'</Begin>
+      <End>'</End>
+    </Span>
+    <Rule color="AttributeName">[\w.:-]+(?=\s*=)</Rule>
+    <!-- The name directly after the opening delimiter. A rule cannot look behind the place the search starts at, so it
+         is anchored to that place. An attribute at the start of a line matches both rules, and the first one wins. -->
+    <Rule color="TagName">\G[\w.:-]+</Rule>
+  </RuleSet>
+
+  <RuleSet name="Entities">
+    <Rule color="Entity">&amp;\#?\w+;</Rule>
+    <Rule color="BrokenEntity">&amp;\#?\w*</Rule>
+  </RuleSet>
+</SyntaxDefinition>

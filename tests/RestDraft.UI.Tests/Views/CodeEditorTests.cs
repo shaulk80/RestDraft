@@ -6,6 +6,7 @@ using Avalonia.Styling;
 using Avalonia.Threading;
 using NUnit.Framework;
 using RestDraft.UI.Controls;
+using RestDraft.UI.Highlighting;
 using RestDraft.UI.Services;
 
 namespace RestDraft.UI.Tests.Views;
@@ -25,33 +26,37 @@ public class CodeEditorTests
         Assert.That(editor.EditorText, Is.EqualTo("[]"));
     }
 
+    [TestCase(EditorLanguage.Json, "Json")]
+    [TestCase(EditorLanguage.Xml, "Xml")]
     [AvaloniaTest]
-    public void SwitchingLanguageAppliesAndRemovesHighlighting()
+    public void SwitchingLanguageAppliesAndRemovesHighlighting(EditorLanguage language, string expectedDefinition)
     {
         var editor = new CodeEditor();
 
-        editor.Language = EditorLanguage.Json;
-        editor.Language = EditorLanguage.Xml;
-        editor.Language = EditorLanguage.PlainText;
+        editor.Language = language;
+        Assert.That(editor.SyntaxHighlighting?.Name, Is.EqualTo(expectedDefinition));
 
-        Assert.That(editor.Language, Is.EqualTo(EditorLanguage.PlainText));
+        editor.Language = EditorLanguage.PlainText;
+        Assert.That(editor.SyntaxHighlighting, Is.Null);
     }
 
     [AvaloniaTest]
-    public void SwitchingTheThemeKeepsTheTextAndLanguage()
+    public void SwitchingTheThemeChangesTheHighlightingColors()
     {
         var editor = new CodeEditor { EditorText = "{\"a\": 1}", Language = EditorLanguage.Json };
-        var window = new Window { Content = editor };
+        var window = new Window { Content = editor, RequestedThemeVariant = ThemeVariant.Light };
         window.Show();
         Dispatcher.UIThread.RunJobs();
+        Assert.That(editor.SyntaxHighlighting, Is.SameAs(SyntaxTheme.Light.DefinitionFor(EditorLanguage.Json)));
 
         window.RequestedThemeVariant = ThemeVariant.Dark;
         Dispatcher.UIThread.RunJobs();
+        Assert.That(editor.SyntaxHighlighting, Is.SameAs(SyntaxTheme.Dark.DefinitionFor(EditorLanguage.Json)));
+
         window.RequestedThemeVariant = ThemeVariant.Light;
         Dispatcher.UIThread.RunJobs();
-
+        Assert.That(editor.SyntaxHighlighting, Is.SameAs(SyntaxTheme.Light.DefinitionFor(EditorLanguage.Json)));
         Assert.That(editor.Text, Is.EqualTo("{\"a\": 1}"));
-        Assert.That(editor.Language, Is.EqualTo(EditorLanguage.Json));
         window.Close();
     }
 
