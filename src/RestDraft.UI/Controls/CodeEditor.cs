@@ -2,17 +2,15 @@ using Avalonia;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using AvaloniaEdit;
-using AvaloniaEdit.TextMate;
+using AvaloniaEdit.Highlighting;
+using AvaloniaEdit.Rendering;
 using RestDraft.UI.Behaviors;
+using RestDraft.UI.Highlighting;
 using RestDraft.UI.Services;
-using TextMateInstallation = AvaloniaEdit.TextMate.TextMate.Installation;
-using TextMateSharp.Grammars;
-using TextMateSharp.Themes;
 
 namespace RestDraft.UI.Controls;
 
-// A read-write or read-only text editor with syntax highlighting for JSON and XML.
-// Plain text has no grammar, so the highlighting installation is removed.
+// A read-write or read-only text editor with syntax highlighting for JSON and XML. Plain text is not highlighted.
 public sealed class CodeEditor : TextEditor
 {
     public static readonly StyledProperty<EditorLanguage> LanguageProperty =
@@ -24,8 +22,6 @@ public sealed class CodeEditor : TextEditor
             nameof(EditorText),
             defaultValue: string.Empty,
             defaultBindingMode: Avalonia.Data.BindingMode.TwoWay);
-
-    private TextMateInstallation? _installation;
 
     static CodeEditor()
     {
@@ -55,6 +51,11 @@ public sealed class CodeEditor : TextEditor
         set => SetValue(EditorTextProperty, value);
     }
 
+    protected override IVisualLineTransformer CreateColorizer(IHighlightingDefinition highlightingDefinition)
+    {
+        return new LimitedLineColorizer(highlightingDefinition);
+    }
+
     // Tab types a tab character in an editor, so it cannot also leave the editor. Escape leaves it instead
     // (Shift+Escape goes back), which keeps the body editor from being a keyboard trap.
     private void OnEscapeKeyDown(object? sender, KeyEventArgs e)
@@ -70,7 +71,7 @@ public sealed class CodeEditor : TextEditor
         target?.Focus();
     }
 
-    // The highlighting colors belong to the theme, so a switch between light and dark installs the matching set.
+    // The highlighting colors belong to the theme, so a switch between light and dark applies the matching set.
     private void OnThemeVariantChanged(object? sender, EventArgs e)
     {
         ApplyLanguage();
@@ -91,26 +92,6 @@ public sealed class CodeEditor : TextEditor
 
     private void ApplyLanguage()
     {
-        _installation?.Dispose();
-        _installation = null;
-        if (Language == EditorLanguage.PlainText)
-        {
-            return;
-        }
-
-        var registry = new RegistryOptions(ThemeFor(ActualThemeVariant));
-        var installation = this.InstallTextMate(registry);
-        installation.SetGrammar(registry.GetScopeByLanguageId(LanguageId(Language)));
-        _installation = installation;
-    }
-
-    private static ThemeName ThemeFor(Avalonia.Styling.ThemeVariant variant)
-    {
-        return variant == Avalonia.Styling.ThemeVariant.Dark ? ThemeName.DarkPlus : ThemeName.LightPlus;
-    }
-
-    private static string LanguageId(EditorLanguage language)
-    {
-        return language == EditorLanguage.Json ? "json" : "xml";
+        SyntaxHighlighting = SyntaxTheme.For(ActualThemeVariant).DefinitionFor(Language);
     }
 }

@@ -171,7 +171,7 @@ Grouped by folder. Every type is a separate file.
 - **Response:** `ResponseViewModel`, which shows status, timing, size, headers, and a body that can be pretty or raw.
 - **Environments and secrets:** `EnvironmentSelectorViewModel`, `EnvironmentEditorViewModel`, `VariableRowViewModel`, `UnlockDialogViewModel`, `MasterPasswordSetupViewModel`.
 - **Settings:** `SettingsViewModel` and `SettingsWindow`.
-- **Editor integration:** `EditorLanguageMapper` maps body type to a TextMate grammar (JSON, XML, plain text). AvaloniaEdit with `AvaloniaEdit.TextMate`.
+- **Editor integration:** `EditorLanguageMapper` maps body type to a language (JSON, XML, plain text). `CodeEditor` is an AvaloniaEdit editor; `SyntaxTheme` gives it the definitions in `Highlighting/*.xshd` in the colors of the theme, and only the start of a very long line is colored (`ARCHITECTURE_PLAN.md`, Q15).
 - **Services:** `IDialogService`, `IFilePickerService`, `IClipboardService`, `ErrorMessageFormatter` (turns `Error` into user text).
 - **Keyboard shortcuts:** defined in `MainWindow` (Ctrl+Enter sends, Ctrl+S saves, Ctrl+Shift+S saves all, Ctrl+T opens a new tab, Ctrl+F4 closes one, Ctrl+Tab and Ctrl+Shift+Tab switch request tabs in recently used order). The menu items call the same commands.
 

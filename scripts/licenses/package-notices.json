@@ -60,32 +60,5 @@
         "textFile": "bundled/sqlite.txt"
       }
     ]
-  },
-  "TextMateSharp/2.0.3": {
-    "copyright": "Copyright (c) 2021 Daniel Peñalba",
-    "includes": [
-      {
-        "name": "vscode-textmate, which TextMateSharp is a port of",
-        "license": "MIT",
-        "copyright": "Copyright (c) Microsoft Corporation"
-      },
-      {
-        "name": "Eclipse tm4e, on whose implementation TextMateSharp says it is based",
-        "license": "EPL-2.0",
-        "copyright": "Copyright (c) 2015-2017 Angelo ZERR and the tm4e contributors",
-        "textFile": "bundled/eclipse-public-license-2.0.txt"
-      }
-    ]
-  },
-  "TextMateSharp.Grammars/2.0.3": {
-    "copyright": "Copyright (c) 2021 Daniel Peñalba",
-    "includes": [
-      {
-        "name": "Syntax grammars and color themes",
-        "license": "MIT, Apache-2.0, BSD, TextMate Bundle License and others",
-        "copyright": "The authors of each grammar and theme, named in the license text",
-        "textFile": "bundled/textmate-grammars.txt"
-      }
-    ]
   }
 }

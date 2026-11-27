@@ -69,7 +69,7 @@ The app is a single program, so one language covers the whole application.
 
 | Option | Ease of use | Performance | OSS ecosystem | Portability / footprint | Editor support |
 |---|---|---|---|---|---|
-| **A. C# / .NET 10 LTS + Avalonia UI** | High | High | High (NuGet; Avalonia is MIT) | High: self-contained package per target (single-file until 2026-11-18, see Q13) | High: AvaloniaEdit (MIT) with TextMateSharp grammars |
+| **A. C# / .NET 10 LTS + Avalonia UI** | High | High | High (NuGet; Avalonia is MIT) | High: self-contained package per target (single-file until 2026-11-18, see Q13) | High: AvaloniaEdit (MIT) with TextMateSharp grammars (replaced, see Q15) |
 | B. Rust + Tauri (web UI in a system WebView) | Medium: Rust learning curve, UI in web tech | High | High (crates, npm) | High: small binaries. The WebView differs per OS | High: Monaco in the web UI |
 | C. TypeScript + Electron | High | Medium: ships Chromium, high memory use | Very high | Low: 100+ MB per build | High: Monaco |
 | D. Kotlin + Compose Multiplatform (desktop) | Medium to high | High | High (Maven) | Medium: bundles a JVM runtime | Lower: fewer mature code-editor options; needs evaluation |
@@ -191,6 +191,7 @@ Rules:
 | Q12 | Weighting of selection criteria | Irrelevant now that Q1 is decided. | Resolved |
 | Q14 | YAML library | YamlDotNet 18.1.0 (MIT, no dependencies on net10.0, about 0.3 MB) for the Insomnia v5 collection format (decided 2026-11-18). It is used only in `RestDraft.Infrastructure/Exchange/Insomnia`, through DTOs, so it can be replaced. Aliases and deeply nested files are refused before the file is turned into objects. | Decided |
 | Q13 | Package layout | Self-contained publish **without** single-file (decided 2026-11-18, from the release after 0.2.0 on). The package holds one top-level folder `RestDraft-<runtime>/`. Reason: the single-file exe still had to unpack its native libraries (Skia, HarfBuzz, SQLite) to `%TEMP%\.net\RestDraft` on the first run, so it was never a pure single file and wrote outside the data folder. Cost: about 270 files per package instead of one, signing must cover many files (see Q7), and one hash covers the package, not the executable. Size: each package is about 4 MB (8%) larger than 0.2.0 (CI build of `main`: zip 52.0 MB against 47.9 MB, tarball 47.6 MB against 44.0 MB). Checked: Windows and Linux builds, tests and smoke tests, native libraries loaded from the program folder, nothing created in the temp folder. | Decided |
+| Q15 | Syntax highlighting | AvaloniaEdit's own highlighting with RestDraft's definitions for JSON and XML (`RestDraft.UI/Highlighting`), colored per theme by `SyntaxTheme` (decided 2026-11-27). It replaces `AvaloniaEdit.TextMate`, TextMateSharp, its grammars and Onigwrap. Reason: TextMateSharp declares MIT, but says it is based on the EPL-2.0 project `eclipse/tm4e`, and its history holds files of that project; the grammar package also bundled many licenses of its own. Only JSON and XML are highlighted, so little is lost. Only the first 10,000 characters of a line are colored (about what the replaced highlighter did), because the time to draw a line grows with the square of the number of colored tokens in it. | Decided |
 
 ### 6.1 Q8 Explained
 
