@@ -1,6 +1,6 @@
 # New features: implementation plan
 
-Status (2026-11-27): approved. PRs 1 (#26), 2 (#28) and 3 (#29) are merged, PR 4 is implemented on its branch, PRs 5 and 6 are not started. Requirements and decisions: `new-features-requirements.md`.
+Status (2026-11-27): approved. PRs 1 (#26), 2 (#28), 3 (#29) and 4 (#31) are merged, PR 5 is implemented on its branch, PR 6 is not started. Requirements and decisions: `new-features-requirements.md`.
 
 ## 1. Delivery
 
@@ -126,6 +126,16 @@ Mapping cases that give a warning, never a failure: TRACE operations (skipped), 
 Synthetic fixtures for 2.0, 3.0 and 3.1, in JSON and YAML. After the decision step of section 6.1, which includes a parameterized table of YAML values, write these first, because they check assumptions about the library: the server address of a 2.0 file with and without `host`, recursive schemas, and diagnostics for a broken file. Then parameterized mapper tests (names, parameters, bodies, each authentication type, warnings), hostile input (aliases, deep nesting, too large, external reference), `BaseUrlResolver`, preview view model, and an integration test that imports a fixture into SQLite and sends one request to the in-process server.
 
 Manual: import a real specification file (for example the public Petstore one), send a request with a body.
+
+As built (2026-11-27):
+
+- Decision step of section 6.1: the converter stays (about 140 lines). The YAML and JSON editions of the Petstore (2.0 and 3.0), Stripe and GitHub specifications gave identical collections, and every operation of those and of the Kubernetes one was imported (up to 1281 requests, about 2 s at most).
+- RestDraft parses the JSON itself, to a depth of 128, and hands the tree to the library, because the library's own parsing stops at 64.
+- The library throws on a reference that leads back to itself, and on some malformed files with exceptions such as a null reference. `OpenApiReferences` follows references one step at a time, and any exception from the reader fails the read with its reason. A tag name of only spaces or an empty `$ref` therefore refuses the whole file.
+- The library joins the bare types of an OpenAPI 3.0 `oneOf` or `anyOf` into one list of types, so "the first one" cannot be told there; a text is taken where it is allowed.
+- More classes than section 6.3 names, one job each: `OpenApiTagFolders`, `OpenApiParameterValue`, `OpenApiValues`, `OpenApiReferences`, `OpenApiServerAddress`, and the shared `ImportWarningList` and `YamlRootValueReader`.
+- Beyond the mapping rules: Swagger 2.0 `x-example` and a schema's `const` count as given values; a form without fields is no body (Stripe declares one on every GET); properties that the reader skips are reported apart from errors (Kubernetes has 2453 and is imported completely).
+- All fields of a URL-encoded body are enabled, like the properties of a JSON sample. A nested object becomes JSON text in one field.
 
 ## 7. PR 6: import from URL
 
