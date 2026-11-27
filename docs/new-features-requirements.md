@@ -18,7 +18,7 @@ Added on 2026-11-26:
 
 **Today:** the repository has no icon. The executable, the window, the taskbar and Alt+Tab show defaults.
 
-**Chosen:** variant 3, request and response arrows in a circle (`docs/icons/icon-3-exchange.svg`). The five candidates are at https://claude.ai/artifact/8trPsD7fwcvNBjp9gtuB4C (private).
+**Chosen:** variant 3, request and response arrows in a circle (`src/RestDraft.UI/Assets/app-icon.svg`). The five candidates are at https://claude.ai/artifact/8trPsD7fwcvNBjp9gtuB4C (private).
 
 **Requirements:**
 

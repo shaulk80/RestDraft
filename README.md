@@ -1,5 +1,7 @@
 # RestDraft
 
+<img src="src/RestDraft.UI/Assets/app-icon.png" alt="RestDraft icon" width="96" height="96">
+
 RestDraft - a REST API client. A desktop application for Windows and Linux (x64). Build requests, send them, and keep them in collections. Everything is stored on your machine, in a folder next to the program.
 
 ## Features

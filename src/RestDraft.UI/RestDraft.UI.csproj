@@ -6,6 +6,8 @@
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
     <!-- The LibraryImport source generator emits unsafe code for NativeMessageBox. -->
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <!-- Made from Assets\app-icon.svg by scripts\icon\MakeIcon.cs. -->
+    <ApplicationIcon>Assets\app-icon.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
@@ -18,6 +20,8 @@
 
   <ItemGroup>
     <AvaloniaResource Include="Highlighting\*.xshd" />
+    <AvaloniaResource Include="Assets\app-icon.ico" />
+    <AvaloniaResource Include="Assets\app-icon.png" />
   </ItemGroup>
 
   <ItemGroup>
