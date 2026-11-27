@@ -27,9 +27,11 @@
     </ResourceDictionary>
   </Styles.Resources>
 
-  <!-- Only the main window has a taskbar button. Every dialog (settings, environments, confirmations, ...) is a Window
-       too, so none of them needs a button of its own. The main window sets ShowInTaskbar again in its XAML. -->
+  <!-- Every window has the app icon. Only the main window has a taskbar button: every dialog (settings, environments,
+       confirmations, ...) is a Window too, so none of them needs a button of its own. The main window sets ShowInTaskbar
+       again in its XAML. -->
   <Style Selector=":is(Window)">
+    <Setter Property="Icon" Value="avares://RestDraft/Assets/app-icon.ico" />
     <Setter Property="ShowInTaskbar" Value="False" />
   </Style>
   <Style Selector="TextBlock.error">

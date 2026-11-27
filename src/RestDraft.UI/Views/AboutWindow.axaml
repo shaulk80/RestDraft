@@ -8,7 +8,13 @@
         CanResize="False"
         WindowStartupLocation="CenterOwner">
   <StackPanel Margin="16" Spacing="8">
-    <TextBlock Text="RestDraft" FontSize="20" FontWeight="SemiBold" />
+    <StackPanel Orientation="Horizontal" Spacing="12">
+      <Image Source="avares://RestDraft/Assets/app-icon.png"
+             Width="48"
+             Height="48"
+             RenderOptions.BitmapInterpolationMode="HighQuality" />
+      <TextBlock Text="RestDraft" FontSize="20" FontWeight="SemiBold" VerticalAlignment="Center" />
+    </StackPanel>
     <TextBlock x:Name="VersionText" />
     <TextBlock Text="Licensed under the Apache License 2.0." />
     <TextBlock Text="Requests, collections, history and settings are kept in the data folder beside the program."
