@@ -98,6 +98,8 @@ Findings:
 
 File > Import... and File > Export... use the system file dialogs of Avalonia (`StorageProvider`). Checked by the owner with 0.3.0 on Windows and on Linux under WSL2 (same Ubuntu 24.04 setup as above, not a full Linux desktop) and works as expected, reported on 2026-11-24. The checks were: the open dialog shows `*.yaml` and `*.yml` files, the save dialog proposes `<collection name>.yaml` and asks before it overwrites, and a file written to a folder without permission gives a message instead of an error.
 
+Added after 0.3.0 and not yet checked on Linux: the open dialog starts on "All supported files" and shows `*.yaml`, `*.yml` and `*.json`; an OpenAPI file shows the Base URL box in the preview and imports.
+
 ### Re-check of the exe + DLLs package (2026-11-18)
 
 Same machine and WSL as above. The package stopped being single-file (decision of 2026-11-18, `docs/ARCHITECTURE_PLAN.md` section 3.2). Built in WSL from a copy of the tree in the Linux home folder, with .NET SDK 10.0.115 and PowerShell 7.6.10, by `pwsh ./scripts/build.ps1 -Runtimes linux-x64`. Not repeated: the manual checks 1 to 13 above (only that the window opens and the app runs).

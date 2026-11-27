@@ -38,6 +38,19 @@ public sealed class TestHttpServer : IAsyncDisposable
         await _app.DisposeAsync();
     }
 
+    // Sends back what arrived: the request line, the authorization, the content type and the body, one per line.
+    private static async Task<IResult> EchoAsync(HttpRequest request, CancellationToken cancellationToken)
+    {
+        using var reader = new StreamReader(request.Body);
+        var body = await reader.ReadToEndAsync(cancellationToken);
+        return Results.Text(string.Join(
+            '\n',
+            $"{request.Method} {request.Path}{request.QueryString}",
+            request.Headers.Authorization.ToString(),
+            request.ContentType,
+            body));
+    }
+
     private static void MapEndpoints(WebApplication app)
     {
         app.MapGet("/ok", () => Results.Text("hello"));
@@ -54,5 +67,6 @@ public sealed class TestHttpServer : IAsyncDisposable
             return Results.Text("done");
         });
         app.MapGet("/bytes/{size:int}", (int size) => Results.Bytes(new byte[size]));
+        app.Map("/echo/{**path}", EchoAsync);
     }
 }

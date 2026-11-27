@@ -8,11 +8,11 @@
         Width="640"
         Height="700"
         MinWidth="480"
-        MinHeight="460"
+        MinHeight="500"
         WindowStartupLocation="CenterOwner">
   <Grid Margin="12" RowDefinitions="Auto,Auto,Auto,*,Auto,Auto,Auto,Auto,Auto" RowSpacing="8">
     <TextBlock Grid.Row="0" Text="Import into" />
-    <Grid Grid.Row="1" ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto" ColumnSpacing="8" RowSpacing="6">
+    <Grid Grid.Row="1" ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto" ColumnSpacing="8" RowSpacing="6">
       <RadioButton Grid.Row="0"
                    Grid.Column="0"
                    GroupName="ImportTarget"
@@ -42,6 +42,17 @@
           </DataTemplate>
         </ComboBox.ItemTemplate>
       </ComboBox>
+      <TextBlock Grid.Row="2"
+                 Grid.Column="0"
+                 Text="Base URL"
+                 VerticalAlignment="Center"
+                 IsVisible="{Binding HasBaseUrl}" />
+      <TextBox Grid.Row="2"
+               Grid.Column="1"
+               Text="{Binding BaseUrl}"
+               PlaceholderText="Required, for example https://api.example.com or {{base_url}}"
+               IsVisible="{Binding HasBaseUrl}"
+               AutomationProperties.Name="Base URL of the requests" />
     </Grid>
     <CheckBox Grid.Row="2"
               Content="Overwrite existing items"

@@ -30,7 +30,7 @@ public class ImportServiceTests
         _format = A.Fake<ICollectionFormat>();
         A.CallTo(() => _format.DisplayName).Returns("Fake format");
         var workspace = new Workspace<Collection>(_repository.LoadAsync, _repository.SaveAsync);
-        _service = new ImportService(workspace, _reader, [_format]);
+        _service = new ImportService(workspace, _reader, new CollectionTextReader([_format]));
     }
 
     [Test]

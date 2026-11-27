@@ -17,6 +17,7 @@ public sealed class ImportPreviewViewModel : ViewModelBase
     private readonly RelayCommand _clearAllCommand;
     private bool _isNewCollection = true;
     private string _newName;
+    private string _baseUrl;
     private CollectionChoice? _selectedExisting;
     private bool _overwrite;
     private string _summary = string.Empty;
@@ -38,6 +39,7 @@ public sealed class ImportPreviewViewModel : ViewModelBase
         ExistingCollections = existing.Select(collection => new CollectionChoice(collection.Id, collection.Name)).ToList();
         _selectedExisting = ExistingCollections.FirstOrDefault(choice => choice.Id == preselectedCollectionId) ?? (ExistingCollections.Count > 0 ? ExistingCollections[0] : null);
         _newName = ChildNameRules.NextAvailableName(document.Collection.Name, existing.Select(collection => collection.Name).ToList());
+        _baseUrl = document.BaseUrl is null ? string.Empty : BaseUrlResolver.Resolve(document.BaseUrl, downloadAddress: null);
         Warnings = document.Warnings.Select(FormatWarning).ToList();
         _selectAllCommand = new RelayCommand(Tree.SelectAll, () => true);
         _clearAllCommand = new RelayCommand(Tree.ClearAll, () => true);
@@ -83,6 +85,22 @@ public sealed class ImportPreviewViewModel : ViewModelBase
         set
         {
             if (SetProperty(ref _newName, value))
+            {
+                OnInputChanged(this, EventArgs.Empty);
+            }
+        }
+    }
+
+    // Only a document whose request URLs are paths, such as a specification, has a base URL.
+    public bool HasBaseUrl => _document.BaseUrl is not null;
+
+    // What the import puts in front of every request URL.
+    public string BaseUrl
+    {
+        get => _baseUrl;
+        set
+        {
+            if (SetProperty(ref _baseUrl, value ?? string.Empty))
             {
                 OnInputChanged(this, EventArgs.Empty);
             }
@@ -139,11 +157,19 @@ public sealed class ImportPreviewViewModel : ViewModelBase
 
     public ICommand ClearAllCommand => _clearAllCommand;
 
-    // Null when nothing would change.
+    // Null when nothing would change or the base URL is missing.
     public ImportRequest? Request()
     {
-        return CanImport ? new ImportRequest(CurrentTarget(), EffectiveOverwrite, Tree.CheckedIds(), _tabsWithEdits) : null;
+        if (!CanImport)
+        {
+            return null;
+        }
+
+        var baseUrl = HasBaseUrl ? BaseUrl.Trim() : null;
+        return new ImportRequest(CurrentTarget(), EffectiveOverwrite, Tree.CheckedIds(), _tabsWithEdits, baseUrl);
     }
+
+    private bool IsBaseUrlMissing => HasBaseUrl && string.IsNullOrWhiteSpace(_baseUrl);
 
     private bool EffectiveOverwrite => Overwrite && CanOverwrite;
 
@@ -186,7 +212,7 @@ public sealed class ImportPreviewViewModel : ViewModelBase
         TabsNotice = _tabsWithEdits == 0
             ? string.Empty
             : $"{(_tabsWithEdits == 1 ? "1 open tab has" : $"{_tabsWithEdits} open tabs have")} unsaved edits that will be replaced.";
-        CanImport = plan.Counts.HasChanges;
+        CanImport = plan.Counts.HasChanges && !IsBaseUrlMissing;
     }
 
     private void ShowStatuses(ImportPlan plan)

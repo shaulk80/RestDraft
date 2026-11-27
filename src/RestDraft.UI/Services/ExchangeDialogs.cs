@@ -123,7 +123,8 @@ public sealed class ExchangeDialogs : IExchangeDialogs
 
     private async Task<ExchangeOutcome> ApplyAsync(ExchangeDocument document, ImportRequest request, CancellationToken cancellationToken)
     {
-        var applied = await _import.ApplyAsync(document, request.Target, request.Overwrite, request.TickedIds, cancellationToken);
+        var addressed = request.BaseUrl is null ? document : document.WithBaseUrl(request.BaseUrl);
+        var applied = await _import.ApplyAsync(addressed, request.Target, request.Overwrite, request.TickedIds, cancellationToken);
         if (!applied.IsSuccess)
         {
             return ExchangeOutcome.Failed(ErrorMessageFormatter.Format(applied.Error!));

@@ -1,9 +1,9 @@
-using RestDraft.Domain.Collections;
 using RestDraft.Domain.Results;
 
 namespace RestDraft.Application.Exchange;
 
-// A file format for one collection. A new format is one more implementation; the dialogs and the merge do not change.
+// A file format that holds one collection and can be imported. A new format is one more implementation; the dialogs and
+// the merge do not change.
 public interface ICollectionFormat
 {
     string Id { get; }
@@ -17,6 +17,4 @@ public interface ICollectionFormat
     Result<bool> CanRead(string text);
 
     Result<ExchangeDocument> Read(string text);
-
-    Result<string> Write(Collection collection);
 }

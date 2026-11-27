@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using RestDraft.Application.Abstractions;
 using RestDraft.Application.Exchange;
 using RestDraft.Infrastructure.Exchange.Insomnia;
+using RestDraft.Infrastructure.Exchange.OpenApi;
 using RestDraft.Infrastructure.Http;
 using RestDraft.Infrastructure.Logging;
 using RestDraft.Infrastructure.Persistence;
@@ -48,9 +49,18 @@ public static class InfrastructureServiceCollectionExtensions
         services.AddSingleton<IBodyFileStore, BodyFileStore>();
         services.AddSingleton<IFileReader, LocalFileReader>();
         services.AddSingleton<IFileWriter, LocalFileWriter>();
-        services.AddSingleton<ICollectionFormat, InsomniaV5Format>();
+        AddCollectionFormats(services);
 
         return services;
+    }
+
+    // The order is the order in which an imported file is offered to the formats, and in which the file dialog lists them.
+    private static void AddCollectionFormats(IServiceCollection services)
+    {
+        services.AddSingleton<InsomniaV5Format>();
+        services.AddSingleton<IWritableCollectionFormat>(provider => provider.GetRequiredService<InsomniaV5Format>());
+        services.AddSingleton<ICollectionFormat>(provider => provider.GetRequiredService<InsomniaV5Format>());
+        services.AddSingleton<ICollectionFormat, OpenApiFormat>();
     }
 
     private static SqliteConnectionFactory CreateConnectionFactory(string dataFolder)

@@ -17,7 +17,7 @@ public sealed class ExchangeFilePicker : IExchangeFilePicker
         {
             Title = "Import a collection",
             AllowMultiple = false,
-            FileTypeFilter = [.. formats.Select(FileTypeOf), FilePickerFileTypes.All],
+            FileTypeFilter = [AllSupported(formats), .. formats.Select(FileTypeOf), FilePickerFileTypes.All],
         });
         return files.Count == 0 ? Result<string?>.Success(null) : LocalPath(files[0]);
     }
@@ -41,11 +41,22 @@ public sealed class ExchangeFilePicker : IExchangeFilePicker
         return file is null ? Result<string?>.Success(null) : LocalPath(file);
     }
 
+    // The first filter is the one that a dialog starts with, so it shows every file that can be imported.
+    private static FilePickerFileType AllSupported(IReadOnlyList<ICollectionFormat> formats)
+    {
+        return FileTypeFor("All supported files", formats.SelectMany(format => format.FileExtensions).Distinct());
+    }
+
     private static FilePickerFileType FileTypeOf(ICollectionFormat format)
     {
-        return new FilePickerFileType(format.DisplayName)
+        return FileTypeFor(format.DisplayName, format.FileExtensions);
+    }
+
+    private static FilePickerFileType FileTypeFor(string name, IEnumerable<string> extensions)
+    {
+        return new FilePickerFileType(name)
         {
-            Patterns = [.. format.FileExtensions.Select(extension => "*" + extension)],
+            Patterns = [.. extensions.Select(extension => "*" + extension)],
         };
     }
 
