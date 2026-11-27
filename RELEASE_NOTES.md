@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- "New request" in the Collections tree starts a rename of the new request. Enter saves the name and moves to the URL box, Escape keeps "New request" and moves there too, and clicking elsewhere saves the name. Before, the cursor went to the body editor.
 - RestDraft has an icon: request and response arrows in a circle. The Windows executable, every window and the About window show it. On Linux only the windows have it, because there is no installer and no `.desktop` file.
 - The packages carry `LICENSE`, `NOTICE` and `third-party-notices.txt`, which lists every component in the package with its copyright and license text. The 0.3.0 package was published without these files.
 - JSON and XML highlighting no longer uses TextMateSharp, because of a doubt about its license. The colors are about the same. In a very long line, such as a minified body, the first 10,000 characters are colored. The package is smaller.

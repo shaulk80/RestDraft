@@ -8,4 +8,9 @@ public partial class RequestBarView : UserControl
     {
         InitializeComponent();
     }
+
+    public void FocusUrl()
+    {
+        UrlBox.Focus();
+    }
 }

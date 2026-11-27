@@ -34,7 +34,7 @@ Do it once per release, in light and in dark mode (Windows *Settings > Personali
 | 1 | Use only the keyboard: Tab through the main window | Focus reaches every control and is visible; no focus trap | |
 | 2 | In the Collections tree: arrow keys, F2, Delete, Enter, Shift+F10, Esc | Moves, renames, asks to delete, opens a request, opens and closes the menu | |
 | 2a | Tab into the body editor (choose a raw body first), then press Esc / Shift+Esc | Focus moves to the next / previous control | |
-| 3 | New collection / New folder | The name box has focus with its text selected | |
+| 3 | New collection / New folder / New request (toolbar button and context menu, with "open on single click" on and off) | The name box has focus with its text selected. For a request, Enter or Esc moves the focus to the URL box | |
 | 4 | Open each dialog (Save, Settings, Unlock, Set master password, Environments, Delete, Unsaved changes) | Focus starts in the first input. Enter confirms where it is safe, Esc cancels | |
 | 5 | Switch Windows between light and dark while the app runs | Text stays readable. Error and warning text is readable. JSON and XML colors follow the theme | |
 | 6 | Run Narrator (Win+Ctrl+Enter) and visit the controls | Each control is announced with a name, not just its type | |

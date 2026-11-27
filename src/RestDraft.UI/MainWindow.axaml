@@ -191,7 +191,8 @@
                    IsVisible="{Binding !TabStrip.HasTabs}"
                    Text="Open a request from the Collections sidebar, or create one with New request." />
         <Grid Grid.Row="1" RowDefinitions="Auto,*" IsVisible="{Binding TabStrip.HasTabs}">
-          <views:RequestBarView Grid.Row="0"
+          <views:RequestBarView x:Name="RequestBar"
+                                Grid.Row="0"
                                 Margin="0,8,0,4"
                                 DataContext="{Binding TabStrip.SelectedTab}" />
           <Grid x:Name="RequestPanels" Grid.Row="1" ColumnDefinitions="*,Auto,420">

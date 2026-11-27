@@ -229,6 +229,23 @@ public class TabStripViewModelTests
         Assert.That(strip.SelectedTab, Is.SameAs(strip.Tabs[0]));
     }
 
+    [TestCase(true, 1)]
+    [TestCase(false, 0)]
+    public async Task OpeningARequestAsksForTheEditorFocusOnlyWhenWanted(bool focusEditor, int expected)
+    {
+        var strip = CreateStrip();
+        var request = Definition("Login");
+        A.CallTo(() => _requests.GetAsync(request.Id, A<CancellationToken>._))
+            .Returns(Task.FromResult(Result<RequestDefinition>.Success(request)));
+        var raised = 0;
+        strip.TabOpened += (_, _) => raised++;
+
+        await strip.OpenRequestAsync(request.Id, focusEditor);
+
+        Assert.That(strip.SelectedTab?.RequestId, Is.EqualTo(request.Id));
+        Assert.That(raised, Is.EqualTo(expected));
+    }
+
     [Test]
     public async Task SyncWithTreeRenamesLinkedTabsAndClosesDeletedOnes()
     {

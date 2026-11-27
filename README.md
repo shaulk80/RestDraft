@@ -9,7 +9,7 @@ RestDraft - a REST API client. A desktop application for Windows and Linux (x64)
 - Requests with any method, URL, query parameters, headers, body and authorization. Parameters and headers are rows that can be switched on and off. Bodies can be raw text (JSON and XML are highlighted and can be formatted), form-urlencoded, or multipart with files.
 - Authorization: Basic, Bearer token, and API key (in a header or in the query).
 - Responses show status, timing, size, headers, and a body that can be viewed pretty-printed or raw. Large bodies are kept on disk, and the first 1 MB is shown.
-- Collections with folders and subfolders. Drag and drop to move items.
+- Collections with folders and subfolders. Drag and drop to move items. A new request is named in the tree as soon as it is created, and Enter or Escape then moves on to its URL.
 - Filter for the Collections tree and for the History, from the funnel button at the left of the top bar: text (names and URLs), method, and optionally the request bodies. Each tab keeps its own filter, and the funnel is filled while one is applied.
 - History of every request that was sent, with search and restore. History keeps the URL as you typed it, with `{{placeholders}}`, so secret values never reach it.
 - Environments with `{{variables}}`. Variables can be marked secret. Secrets are encrypted with a master password. In the Environments window the names are edited in the list, and one environment is marked as the current one.

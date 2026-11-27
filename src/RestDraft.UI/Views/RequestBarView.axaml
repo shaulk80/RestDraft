@@ -10,7 +10,8 @@
                 ItemsSource="{Binding Methods}"
                 SelectedItem="{Binding Method}"
                 AutomationProperties.Name="HTTP method" />
-      <TextBox Grid.Column="1"
+      <TextBox x:Name="UrlBox"
+               Grid.Column="1"
                Text="{Binding Url}"
                PlaceholderText="https://example.com/resource"
                AutomationProperties.Name="Request URL" />

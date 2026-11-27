@@ -54,6 +54,12 @@ public sealed class CollectionsTreeViewModel : ViewModelBase
 
     public event Action<Guid>? RequestOpenRequested;
 
+    // A request was just created here. It is to be opened, and then named in the tree.
+    public event Action<Guid>? RequestCreated;
+
+    // The user finished naming a new request with the keyboard, so the URL is what comes next.
+    public event EventHandler? UrlFocusRequested;
+
     public event EventHandler? TreeChanged;
 
     public ObservableCollection<CollectionNodeViewModel> Roots { get; } = [];
@@ -130,6 +136,29 @@ public sealed class CollectionsTreeViewModel : ViewModelBase
         return AllNodes().OfType<RequestNodeViewModel>().FirstOrDefault(node => node.Id == requestId);
     }
 
+    // Selects a shown request and expands what holds it. A request without a node leaves the tree as it is.
+    public RequestNodeViewModel? Reveal(Guid requestId)
+    {
+        var node = FindRequest(requestId);
+        if (node is null)
+        {
+            return null;
+        }
+
+        for (var parent = node.Parent; parent is not null; parent = parent.Parent)
+        {
+            parent.IsExpanded = true;
+        }
+
+        SelectedNode = node;
+        return node;
+    }
+
+    public void BeginRenameOfNew(Guid requestId)
+    {
+        Reveal(requestId)?.BeginRenameOfNewRequest();
+    }
+
     // The tree shows only what the filter finds, so the open tabs are matched against all requests, not the shown ones.
     public string? FindRequestName(Guid requestId)
     {
@@ -184,6 +213,28 @@ public sealed class CollectionsTreeViewModel : ViewModelBase
     public void OpenRequest(Guid requestId)
     {
         RequestOpenRequested?.Invoke(requestId);
+    }
+
+    // Enter commits like leaving the box does. After the name of a new request it also asks for the URL, whether the
+    // name was accepted or refused, because the rename is over in both cases.
+    public async Task AcceptRenameAsync(TreeNodeViewModel node)
+    {
+        var wasNamingNewRequest = node.IsNamingNewRequest;
+        await CommitRenameAsync(node);
+        if (wasNamingNewRequest)
+        {
+            UrlFocusRequested?.Invoke(this, EventArgs.Empty);
+        }
+    }
+
+    public void CancelRename(TreeNodeViewModel node)
+    {
+        var wasNamingNewRequest = node.IsNamingNewRequest;
+        node.EndRename();
+        if (wasNamingNewRequest)
+        {
+            UrlFocusRequested?.Invoke(this, EventArgs.Empty);
+        }
     }
 
     // Enter and losing the focus both commit. The second call finds the rename already over and does nothing,
@@ -257,7 +308,7 @@ public sealed class CollectionsTreeViewModel : ViewModelBase
 
         var requestId = result.Value;
         await ReloadAsync(requestId, parent.Id);
-        RequestOpenRequested?.Invoke(requestId);
+        RequestCreated?.Invoke(requestId);
     }
 
     public async Task DuplicateAsync(TreeNodeViewModel request)
