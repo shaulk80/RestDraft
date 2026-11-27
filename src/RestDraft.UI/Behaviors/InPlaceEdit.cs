@@ -6,7 +6,7 @@ using Avalonia.Threading;
 namespace RestDraft.UI.Behaviors;
 
 // Makes a text box an in-place editor for a name. When the box becomes visible it takes the focus with its text
-// selected, so typing starts at once. Leaving the box with the mouse or Tab runs the command, the same as Enter.
+// selected, so typing starts at once. Leaving the box with the mouse or Tab runs the command, which commits the name.
 public static class InPlaceEdit
 {
     public static readonly AttachedProperty<ICommand?> CommitOnLostFocusProperty =

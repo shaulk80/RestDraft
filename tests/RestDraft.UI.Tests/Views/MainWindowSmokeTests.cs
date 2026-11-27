@@ -46,6 +46,8 @@ public partial class MainWindowSmokeTests
     public void TearDown()
     {
         _window.Close();
+        // NUnit runs all tests on one fixture object, so the settings one test asks for must not reach the next one.
+        _initialSettings = null;
     }
 
     [AvaloniaTest]
@@ -270,18 +272,30 @@ public partial class MainWindowSmokeTests
         return box;
     }
 
+    // Shows the window with the stored tab, which is selected, and the other tabs after it.
     private void OpenWindow(params RequestDefinition[] otherTabs)
+    {
+        CreateFixtures();
+        ShowWindow([_stored, .. otherTabs], _stored);
+    }
+
+    // The part of OpenWindow before the window exists, for a test that changes what the window loads at its start.
+    private void CreateFixtures()
     {
         _fixtures = new TreeFixtures();
         _stored = new RequestDefinition { Id = Guid.NewGuid(), Name = "Stored", Url = "https://example.com/stored" };
         A.CallTo(() => _fixtures.Requests.UpdateAsync(A<Guid>._, A<Func<RequestDefinition, RequestDefinition>>._, A<CancellationToken>._))
             .Returns(Task.FromResult(Result.Success()));
+    }
+
+    private void ShowWindow(IReadOnlyList<RequestDefinition> storedTabs, RequestDefinition selectedTab)
+    {
         _sender = A.Fake<IRequestSender>();
         A.CallTo(() => _sender.SendAsync(A<RequestDefinition>._, A<CancellationToken>._))
             .Returns(Task.FromResult(Result<ResponseSnapshot>.Failure(new Error(ErrorCategory.Network, "Not sent."))));
         _tabService = TabStripFactory.CreateTabService();
-        var restored = new[] { _stored }.Concat(otherTabs)
-            .Select(definition => new RestoredTab(definition, IsLinked: true, IsDirty: false, IsSelected: definition == _stored))
+        var restored = storedTabs
+            .Select(definition => new RestoredTab(definition, IsLinked: true, IsDirty: false, IsSelected: definition == selectedTab))
             .ToList();
         A.CallTo(() => _tabService.RestoreAsync(A<CancellationToken>._)).Returns(Task.FromResult(
             Result<IReadOnlyList<RestoredTab>>.Success(restored)));

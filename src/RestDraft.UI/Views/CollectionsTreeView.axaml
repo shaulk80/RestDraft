@@ -129,7 +129,7 @@
                        AutomationProperties.Name="New name"
                        IsVisible="{Binding IsEditing}">
                 <TextBox.KeyBindings>
-                  <KeyBinding Gesture="Enter" Command="{Binding CommitRenameCommand}" />
+                  <KeyBinding Gesture="Enter" Command="{Binding AcceptRenameCommand}" />
                   <KeyBinding Gesture="Escape" Command="{Binding CancelRenameCommand}" />
                 </TextBox.KeyBindings>
               </TextBox>

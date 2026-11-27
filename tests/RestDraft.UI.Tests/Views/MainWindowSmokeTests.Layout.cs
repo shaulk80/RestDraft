@@ -157,7 +157,7 @@ public partial class MainWindowSmokeTests
 
     [TestCase("_File", new[] { "_New request", "_Save", "Save _all", "_Close tab", "_Import...", "_Export...", "Se_ttings...", "E_xit" })]
     [TestCase("_Edit", new[] { "_Filter...", "Cu_t", "_Copy", "_Paste", "Select _all", "S_end", "Cancel s_end" })]
-    [TestCase("_View", new[] { "_Collections panel", "_Response panel", "Environment and _secrets bar", "_Next request tab", "_Previous request tab" })]
+    [TestCase("_View", new[] { "_Collections panel", "_Response panel", "Environment and _secrets bar", "_Track active request", "_Next request tab", "_Previous request tab" })]
     [TestCase("_Tools", new[] { "_Unlock secrets", "Manage _environments..." })]
     [TestCase("_Help", new[] { "_About" })]
     [AvaloniaTest]

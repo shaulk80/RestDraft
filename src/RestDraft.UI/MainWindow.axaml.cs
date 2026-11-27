@@ -55,6 +55,7 @@ public partial class MainWindow : Window
             _viewModel.PropertyChanged -= OnViewModelChanged;
             _viewModel.Layout.PropertyChanged -= OnLayoutChanged;
             _viewModel.TabStrip.TabOpened -= OnTabOpened;
+            _viewModel.Sidebar.UrlFocusRequested -= OnUrlFocusRequested;
             _viewModel.SearchApplied -= OnSearchApplied;
         }
 
@@ -64,6 +65,7 @@ public partial class MainWindow : Window
             _viewModel.PropertyChanged += OnViewModelChanged;
             _viewModel.Layout.PropertyChanged += OnLayoutChanged;
             _viewModel.TabStrip.TabOpened += OnTabOpened;
+            _viewModel.Sidebar.UrlFocusRequested += OnUrlFocusRequested;
             _viewModel.SearchApplied += OnSearchApplied;
             ApplyLayout();
         }
@@ -149,6 +151,12 @@ public partial class MainWindow : Window
     private void OnTabOpened(object? sender, RequestTabViewModel e)
     {
         Dispatcher.UIThread.Post(Details.FocusBody, DispatcherPriority.Background);
+    }
+
+    // Posted, because the tree is rebuilt after a rename and the focus must move once that is on screen.
+    private void OnUrlFocusRequested(object? sender, EventArgs e)
+    {
+        Dispatcher.UIThread.Post(RequestBar.FocusUrl, DispatcherPriority.Background);
     }
 
     // The theme belongs to the whole application, so the dialogs follow it too.

@@ -17,6 +17,7 @@ public partial class CollectionsTreeView : UserControl
     private readonly DragStarter<TreeNodeViewModel> _drag = new(NodeFormat);
     private readonly DropIndicator _dropIndicator;
     private TopLevel? _topLevel;
+    private CollectionsTreeViewModel? _revealingViewModel;
 
     public CollectionsTreeView()
     {
@@ -37,6 +38,21 @@ public partial class CollectionsTreeView : UserControl
 
     private CollectionsTreeViewModel? ViewModel => DataContext as CollectionsTreeViewModel;
 
+    protected override void OnDataContextChanged(EventArgs e)
+    {
+        base.OnDataContextChanged(e);
+        if (_revealingViewModel is not null)
+        {
+            _revealingViewModel.NodeRevealed -= OnNodeRevealed;
+        }
+
+        _revealingViewModel = ViewModel;
+        if (_revealingViewModel is not null)
+        {
+            _revealingViewModel.NodeRevealed += OnNodeRevealed;
+        }
+    }
+
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
@@ -49,6 +65,12 @@ public partial class CollectionsTreeView : UserControl
         _topLevel?.RemoveHandler(PointerPressedEvent, OnTopLevelPointerPressed);
         _topLevel = null;
         base.OnDetachedFromVisualTree(e);
+    }
+
+    // Posted, because a folder that has just been expanded has no rows before the next layout pass.
+    private void OnNodeRevealed(TreeNodeViewModel node)
+    {
+        Dispatcher.UIThread.Post(() => Tree.TreeContainerFromItem(node)?.BringIntoView(), DispatcherPriority.Background);
     }
 
     // Any press in the window closes the menu first. The tree's own handler then runs, and a

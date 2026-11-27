@@ -154,6 +154,22 @@ public class WorkspaceLayoutViewModelTests
         Assert.That(stored.TimeoutSeconds, Is.EqualTo(12));
     }
 
+    [TestCase(true)]
+    [TestCase(false)]
+    public async Task TrackingTheActiveRequestIsRememberedLikeTheShownPanels(bool isTracking)
+    {
+        _layout.Apply(AppSettings.Default with { TrackActiveRequest = !isTracking });
+        Assert.That(_layout.IsTrackingActiveRequest, Is.EqualTo(!isTracking));
+        _layout.IsTrackingActiveRequest = isTracking;
+        _layout.Apply(AppSettings.Default with { TrackActiveRequest = !isTracking });
+
+        await _layout.RememberVisibilityAsync();
+
+        var stored = (await _settings.GetAsync(CancellationToken.None)).Value!;
+        Assert.That(_layout.IsTrackingActiveRequest, Is.EqualTo(isTracking));
+        Assert.That(stored.TrackActiveRequest, Is.EqualTo(isTracking));
+    }
+
     [Test]
     public async Task HidingAPanelKeepsItsWidth()
     {

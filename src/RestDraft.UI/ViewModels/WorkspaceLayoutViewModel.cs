@@ -3,9 +3,10 @@ using RestDraft.Domain.Results;
 
 namespace RestDraft.UI.ViewModels;
 
-// The sizes of the Collections and Response panels, and whether they and the top bar are shown. The widths are
-// stored in the settings when a splitter is released, and what is shown and the size and state of the window when
-// the window closes. All come back at the next start. Hiding a panel keeps its width.
+// The sizes of the Collections and Response panels, and the choices of the View menu: which parts are shown, and
+// whether the tree tracks the active request. The widths are stored in the settings when a splitter is released, and
+// the menu choices and the size and state of the window when the window closes. All come back at the next start.
+// Hiding a panel keeps its width.
 public sealed class WorkspaceLayoutViewModel : ViewModelBase
 {
     private readonly ISettingsService _settings;
@@ -14,6 +15,7 @@ public sealed class WorkspaceLayoutViewModel : ViewModelBase
     private bool _isSidebarVisible = true;
     private bool _isResponseVisible = true;
     private bool _isTopBarVisible = true;
+    private bool _isTrackingActiveRequest;
     private bool _visibilityRestored;
     private double _windowWidth = AppSettings.Default.WindowWidth;
     private double _windowHeight = AppSettings.Default.WindowHeight;
@@ -55,6 +57,13 @@ public sealed class WorkspaceLayoutViewModel : ViewModelBase
         set => SetProperty(ref _isTopBarVisible, value);
     }
 
+    // The Collections tree selects the request of the active tab.
+    public bool IsTrackingActiveRequest
+    {
+        get => _isTrackingActiveRequest;
+        set => SetProperty(ref _isTrackingActiveRequest, value);
+    }
+
     // The size of the window when it is not maximized. The window sets them from its own size while it changes,
     // and they are stored when it closes.
     public double WindowWidth
@@ -75,8 +84,8 @@ public sealed class WorkspaceLayoutViewModel : ViewModelBase
         private set => SetProperty(ref _isWindowMaximized, value);
     }
 
-    // The widths are taken every time. What is shown and the state of the window are taken only the first time:
-    // after that the View menu and the window hold the current state, and it is stored when the window closes,
+    // The widths are taken every time. The View menu choices and the state of the window are taken only the first
+    // time: after that the menu and the window hold the current state, and it is stored when the window closes,
     // so a later call (after the Settings dialog) must not bring back the old state.
     public void Apply(AppSettings settings)
     {
@@ -94,6 +103,7 @@ public sealed class WorkspaceLayoutViewModel : ViewModelBase
         IsSidebarVisible = settings.SidebarVisible;
         IsResponseVisible = settings.ResponseVisible;
         IsTopBarVisible = settings.TopBarVisible;
+        IsTrackingActiveRequest = settings.TrackActiveRequest;
     }
 
     public Task<Result> RememberVisibilityAsync()
@@ -142,6 +152,7 @@ public sealed class WorkspaceLayoutViewModel : ViewModelBase
             SidebarVisible = IsSidebarVisible,
             ResponseVisible = IsResponseVisible,
             TopBarVisible = IsTopBarVisible,
+            TrackActiveRequest = IsTrackingActiveRequest,
             WindowWidth = (int)WindowWidth,
             WindowHeight = (int)WindowHeight,
             WindowMaximized = IsWindowMaximized,

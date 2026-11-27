@@ -1,6 +1,6 @@
 # New features: implementation plan
 
-Status (2026-11-27): approved. PRs 1 (#26) and 2 (#28) are done, PRs 3 to 6 are not started. Requirements and decisions: `new-features-requirements.md`.
+Status (2026-11-27): approved. PRs 1 (#26) and 2 (#28) are merged, PR 3 is implemented on its branch, PRs 4 to 6 are not started. Requirements and decisions: `new-features-requirements.md`.
 
 ## 1. Delivery
 
@@ -68,6 +68,8 @@ Tests: view model tests, parameterized over Enter, Escape and lost focus (name s
 Tests: `ActiveRequestTracker`, parameterized (off, on, switched on later, unlinked tab, filtered-out request, folder reload); settings round trip; headless scroll test.
 
 Manual: new request by button and by context menu, with the single-click setting on and off; tracking with Ctrl+Tab, tab close, restart and an active filter.
+
+As built, two points go beyond the steps above. Step 4 of 4.2: the tracker listens to a new `TabStrip.ActiveTabChanged`, not to `SelectedTab`, because the tab control selects tabs by itself while tabs are added or replaced, and an import or a start then moved the tree to a request that was not the active one. Step 5: Avalonia scrolls only to a newly selected node, so `Reveal` raises `NodeRevealed` and the view calls `BringIntoView`.
 
 ## 5. PR 4: search in the response
 

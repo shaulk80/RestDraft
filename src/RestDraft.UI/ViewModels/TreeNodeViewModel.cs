@@ -19,7 +19,8 @@ public abstract class TreeNodeViewModel : ViewModelBase
         _isExpanded = owner.WasExpanded(id);
         RenameCommand = new RelayCommand(BeginRename, () => true);
         CommitRenameCommand = new AsyncRelayCommand(() => _owner.CommitRenameAsync(this), () => true);
-        CancelRenameCommand = new RelayCommand(EndRename, () => true);
+        AcceptRenameCommand = new AsyncRelayCommand(() => _owner.AcceptRenameAsync(this), () => true);
+        CancelRenameCommand = new RelayCommand(() => _owner.CancelRename(this), () => true);
         DeleteCommand = new AsyncRelayCommand(() => _owner.DeleteAsync(this), () => true);
         NewFolderCommand = new AsyncRelayCommand(() => _owner.CreateFolderAsync(this), () => true);
         NewRequestCommand = new AsyncRelayCommand(() => _owner.CreateRequestAsync(this), () => true);
@@ -55,6 +56,9 @@ public abstract class TreeNodeViewModel : ViewModelBase
     // The collection or folder that holds this node. A collection has none.
     public TreeNodeViewModel? Parent { get; private set; }
 
+    // True while the rename box holds the first name of a request that was just created.
+    public bool IsNamingNewRequest { get; private set; }
+
     public abstract bool CanContainChildren { get; }
 
     public virtual bool IsRequest => false;
@@ -68,8 +72,13 @@ public abstract class TreeNodeViewModel : ViewModelBase
 
     public ICommand RenameCommand { get; }
 
+    // Leaving the rename box.
     public ICommand CommitRenameCommand { get; }
 
+    // Enter in the rename box.
+    public ICommand AcceptRenameCommand { get; }
+
+    // Escape in the rename box.
     public ICommand CancelRenameCommand { get; }
 
     public ICommand DeleteCommand { get; }
@@ -86,13 +95,25 @@ public abstract class TreeNodeViewModel : ViewModelBase
 
     public void BeginRename()
     {
-        EditName = Name;
-        IsEditing = true;
+        StartRename(isNewRequest: false);
+    }
+
+    public void BeginRenameOfNewRequest()
+    {
+        StartRename(isNewRequest: true);
     }
 
     public void EndRename()
     {
+        IsNamingNewRequest = false;
         IsEditing = false;
+    }
+
+    private void StartRename(bool isNewRequest)
+    {
+        IsNamingNewRequest = isNewRequest;
+        EditName = Name;
+        IsEditing = true;
     }
 
     protected void SetChildren(IReadOnlyList<TreeNodeViewModel> children)

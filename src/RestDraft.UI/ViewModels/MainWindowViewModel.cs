@@ -45,12 +45,14 @@ public sealed class MainWindowViewModel : ViewModelBase
         _importCommand = new AsyncRelayCommand(ImportAsync, () => true);
         _exportCommand = new AsyncRelayCommand(ExportAsync, () => Sidebar.HasCollections);
         Sidebar.RequestOpenRequested += OnRequestOpenRequested;
+        Sidebar.RequestCreated += OnRequestCreated;
         Sidebar.TreeChanged += OnTreeChanged;
         History.RestoreRequested += TabStrip.OpenUnsaved;
         TabStrip.RequestSent += OnTabRequestSent;
         TabStrip.Linked += OnTabLinked;
         Sidebar.Search.Applied += OnSearchApplied;
         History.Search.Applied += OnSearchApplied;
+        new ActiveRequestTracker(Sidebar, TabStrip, Layout).Start();
     }
 
     // The search popup closes when a search has been applied.
@@ -140,9 +142,9 @@ public sealed class MainWindowViewModel : ViewModelBase
         ReportFailure(await Layout.RememberWindowAsync(normalWidth, normalHeight, isMaximized));
     }
 
-    public async Task OpenRequestAsync(Guid requestId)
+    public async Task OpenRequestAsync(Guid requestId, bool focusEditor = true)
     {
-        var opened = await TabStrip.OpenRequestAsync(requestId);
+        var opened = await TabStrip.OpenRequestAsync(requestId, focusEditor);
         if (!opened.IsSuccess)
         {
             Sidebar.StatusMessage = ErrorMessageFormatter.Format(opened.Error!);
@@ -203,6 +205,13 @@ public sealed class MainWindowViewModel : ViewModelBase
     private async void OnRequestOpenRequested(Guid requestId)
     {
         await OpenRequestAsync(requestId);
+    }
+
+    // The rename starts after the tab is open, so nothing that opening does can take the focus from the name box.
+    private async void OnRequestCreated(Guid requestId)
+    {
+        await OpenRequestAsync(requestId, focusEditor: false);
+        Sidebar.BeginRenameOfNew(requestId);
     }
 
     private async void OnTabRequestSent(object? sender, EventArgs e)
