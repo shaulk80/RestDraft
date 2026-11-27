@@ -1,0 +1,91 @@
+{
+  "Avalonia/12.1.4": {
+    "includes": [
+      {
+        "name": "Code from other projects compiled into Avalonia",
+        "license": "MIT, MS-PL, BSD, Apache-2.0",
+        "copyright": "The owners named in the license text",
+        "textFile": "bundled/avalonia-notice.txt"
+      },
+      {
+        "name": "Roboto Light font 2.137 (in Avalonia.Dialogs.dll)",
+        "license": "Apache-2.0",
+        "copyright": "Copyright 2011 Google Inc. All Rights Reserved."
+      },
+      {
+        "name": "React and ReactDOM 17.0.2 with Scheduler (web previewer in Avalonia.DesignerSupport.dll)",
+        "license": "MIT",
+        "copyright": "Copyright (c) Facebook, Inc. and its affiliates."
+      },
+      {
+        "name": "object-assign (web previewer in Avalonia.DesignerSupport.dll)",
+        "license": "MIT",
+        "copyright": "Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (sindresorhus.com)"
+      }
+    ]
+  },
+  "Avalonia.Angle.Windows.Natives/2.1.27548.20260419": {
+    "copyright": "Copyright 2018 The ANGLE Project Authors",
+    "includes": [
+      {
+        "name": "xxHash",
+        "license": "BSD-2-Clause",
+        "copyright": "Copyright (c) 2012-2021 Yann Collet",
+        "textFile": "bundled/xxhash.txt"
+      }
+    ]
+  },
+  "Avalonia.AvaloniaEdit/12.0.0": {
+    "copyright": "Copyright (c) 2017 Eli Arbel; Copyright 2017-2026 © The AvaloniaUI Project",
+    "includes": [
+      {
+        "name": "AvalonEdit, the editor AvaloniaEdit was ported from",
+        "license": "MIT",
+        "copyright": "Copyright (c) 2014 AlphaSierraPapa for the SharpDevelop Team"
+      }
+    ]
+  },
+  "Serilog.Extensions.Logging/10.0.0": {
+    "copyright": "Copyright (c) Serilog Contributors; Copyright (c) .NET Foundation. All rights reserved."
+  },
+  "Serilog.Sinks.File/7.0.0": {
+    "copyright": "Copyright 2013-2019 Serilog Contributors"
+  },
+  "SQLitePCLRaw.lib.e_sqlite3/2.1.13": {
+    "includes": [
+      {
+        "name": "SQLite",
+        "license": "Public domain",
+        "copyright": "None: the authors dedicated SQLite to the public domain",
+        "textFile": "bundled/sqlite.txt"
+      }
+    ]
+  },
+  "TextMateSharp/2.0.3": {
+    "copyright": "Copyright (c) 2021 Daniel Peñalba",
+    "includes": [
+      {
+        "name": "vscode-textmate, which TextMateSharp is a port of",
+        "license": "MIT",
+        "copyright": "Copyright (c) Microsoft Corporation"
+      },
+      {
+        "name": "Eclipse tm4e, on whose implementation TextMateSharp says it is based",
+        "license": "EPL-2.0",
+        "copyright": "Copyright (c) 2015-2017 Angelo ZERR and the tm4e contributors",
+        "textFile": "bundled/eclipse-public-license-2.0.txt"
+      }
+    ]
+  },
+  "TextMateSharp.Grammars/2.0.3": {
+    "copyright": "Copyright (c) 2021 Daniel Peñalba",
+    "includes": [
+      {
+        "name": "Syntax grammars and color themes",
+        "license": "MIT, Apache-2.0, BSD, TextMate Bundle License and others",
+        "copyright": "The authors of each grammar and theme, named in the license text",
+        "textFile": "bundled/textmate-grammars.txt"
+      }
+    ]
+  }
+}

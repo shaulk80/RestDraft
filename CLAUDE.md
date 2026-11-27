@@ -12,7 +12,7 @@ src/RestDraft.Application     -> Domain (services, interfaces)
 src/RestDraft.Infrastructure  -> Application, Domain (HTTP executor, SQLite, cipher, migrations in Persistence/MigrationScripts)
 src/RestDraft.UI              Avalonia executable and composition root; the only project that references Avalonia
 tests/*.Tests                 NUnit, FakeItEasy, Assert.That; Integration.Tests uses an in-process Kestrel server; SampleApi is a manual test server
-scripts/                      build.ps1 (+ LicenseCheck, Checksums, CoverageReport)
+scripts/                      build.ps1 (+ LicenseCheck, ThirdPartyNotices, NuGetPackages, Checksums, CoverageReport); licenses/ holds the notice data
 docs/                         design, plan, status, checklists (see "Where to look")
 ```
 
@@ -29,6 +29,7 @@ dotnet test RestDraft.slnx -c Release
 - `build.ps1` publishes to `dist\RestDraft-<runtime>\` and overwrites the untracked `dist\RestDraft-win-x64.zip`, which holds that one folder. A local zip never has the hash of a published release asset (to compare with a release, download the asset).
 - `linux-x64` is built only on a Linux host (CI does it, as a `.tar.gz` with the executable bit); on Windows `-Runtimes linux-x64` is skipped with a warning.
 - Coverage is a warning, not a gate (80% target for Domain and Application, `scripts/CoverageReport.ps1`). Failing tests do fail the build.
+- Upgrading or adding a shipped package can fail the notices step until `scripts/licenses/package-notices.json` is reviewed for it (see the README in that folder).
 - Working-tree files are CRLF (autocrlf); git's "LF will be replaced by CRLF" warning is harmless.
 
 ## Git and CI

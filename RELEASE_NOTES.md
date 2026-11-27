@@ -1,5 +1,9 @@
 # Release notes
 
+## Unreleased
+
+- The packages carry `LICENSE`, `NOTICE` and `third-party-notices.txt`, which lists every component in the package with its copyright and license text. The 0.3.0 package was published without these files.
+
 ## 0.3.0 (import and export, a filter popup and a folder package)
 
 Two new features and a change in how the program is packaged. The packages are the same as in 0.2.0: `RestDraft-win-x64.zip`, `RestDraft-linux-x64.tar.gz` and `SHA256SUMS.txt`, built by GitHub Actions from the release tag.
