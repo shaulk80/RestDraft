@@ -60,6 +60,9 @@ public sealed class CollectionsTreeViewModel : ViewModelBase
     // The user finished naming a new request with the keyboard, so the URL is what comes next.
     public event EventHandler? UrlFocusRequested;
 
+    // A node was selected by Reveal and should be scrolled into view, even if it was selected already.
+    public event Action<TreeNodeViewModel>? NodeRevealed;
+
     public event EventHandler? TreeChanged;
 
     public ObservableCollection<CollectionNodeViewModel> Roots { get; } = [];
@@ -151,6 +154,7 @@ public sealed class CollectionsTreeViewModel : ViewModelBase
         }
 
         SelectedNode = node;
+        NodeRevealed?.Invoke(node);
         return node;
     }
 

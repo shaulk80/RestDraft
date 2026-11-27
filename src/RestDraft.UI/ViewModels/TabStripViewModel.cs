@@ -28,6 +28,8 @@ public sealed class TabStripViewModel : ViewModelBase
     private readonly RecentTabs _recent = new();
     private readonly HashSet<Guid> _opening = [];
     private RequestTabViewModel? _selectedTab;
+    private RequestTabViewModel? _reportedTab;
+    private bool _isChangingTabs;
     private bool _isRestored;
     private string _autosaveError = string.Empty;
 
@@ -64,6 +66,7 @@ public sealed class TabStripViewModel : ViewModelBase
             {
                 _recent.Select(value);
                 ScheduleAutosave();
+                ReportActiveTab();
             }
         }
     }
@@ -98,6 +101,10 @@ public sealed class TabStripViewModel : ViewModelBase
     // Raised when a tab is opened by the user and its editor should get the focus: a new tab, a request from the
     // tree, or a restore from history. It is not raised for the tabs that come back at the start.
     public event EventHandler<RequestTabViewModel>? TabOpened;
+
+    // Raised when another tab is the selected one, after the strip has settled. The tab control selects tabs by
+    // itself while tabs are added, moved or replaced, and those passing selections are not reported.
+    public event EventHandler? ActiveTabChanged;
 
     // focusEditor is false when the focus belongs elsewhere, such as the rename box of a new request.
     public async Task<Result> OpenRequestAsync(Guid requestId, bool focusEditor = true)
@@ -179,11 +186,14 @@ public sealed class TabStripViewModel : ViewModelBase
         }
 
         var selected = SelectedTab;
-        Tabs.Move(oldIndex, newIndex);
-        if (SelectedTab != selected)
+        ChangeTabs(() =>
         {
-            SelectedTab = selected;
-        }
+            Tabs.Move(oldIndex, newIndex);
+            if (SelectedTab != selected)
+            {
+                SelectedTab = selected;
+            }
+        });
     }
 
     // Opens the stored tabs. Storing starts only after this, so a tab the user opens meanwhile cannot replace them.
@@ -192,7 +202,7 @@ public sealed class TabStripViewModel : ViewModelBase
         var restored = await _tabService.RestoreAsync(CancellationToken.None);
         if (restored.IsSuccess)
         {
-            AddRestoredTabs(restored.Value!);
+            ChangeTabs(() => AddRestoredTabs(restored.Value!));
         }
         else
         {
@@ -276,8 +286,11 @@ public sealed class TabStripViewModel : ViewModelBase
 
     private void AddTab(RequestTabViewModel tab, bool focusEditor)
     {
-        Tabs.Add(tab);
-        SelectedTab = tab;
+        ChangeTabs(() =>
+        {
+            Tabs.Add(tab);
+            SelectedTab = tab;
+        });
         if (focusEditor)
         {
             TabOpened?.Invoke(this, tab);
@@ -296,11 +309,14 @@ public sealed class TabStripViewModel : ViewModelBase
         _recent.Remove(old);
         var tab = CreateTab(definition, isLinked: true, isDirty: false);
         tab.SectionIndex = old.SectionIndex;
-        Tabs[index] = tab;
-        if (wasSelected)
+        ChangeTabs(() =>
         {
-            SelectedTab = tab;
-        }
+            Tabs[index] = tab;
+            if (wasSelected)
+            {
+                SelectedTab = tab;
+            }
+        });
     }
 
     private void RemoveTab(RequestTabViewModel tab)
@@ -312,11 +328,41 @@ public sealed class TabStripViewModel : ViewModelBase
         tab.CloseRequested -= OnTabCloseRequested;
         var index = Tabs.IndexOf(tab);
         _recent.Remove(tab);
-        Tabs.Remove(tab);
-        if (SelectedTab == tab)
+        ChangeTabs(() =>
         {
-            SelectedTab = Tabs.Count == 0 ? null : Tabs[Math.Min(index, Tabs.Count - 1)];
+            Tabs.Remove(tab);
+            if (SelectedTab == tab)
+            {
+                SelectedTab = Tabs.Count == 0 ? null : Tabs[Math.Min(index, Tabs.Count - 1)];
+            }
+        });
+    }
+
+    // Reports the selected tab once, after the whole change.
+    private void ChangeTabs(Action change)
+    {
+        _isChangingTabs = true;
+        try
+        {
+            change();
         }
+        finally
+        {
+            _isChangingTabs = false;
+        }
+
+        ReportActiveTab();
+    }
+
+    private void ReportActiveTab()
+    {
+        if (_isChangingTabs || _reportedTab == SelectedTab)
+        {
+            return;
+        }
+
+        _reportedTab = SelectedTab;
+        ActiveTabChanged?.Invoke(this, EventArgs.Empty);
     }
 
     private async Task<bool> ConfirmCloseAsync(RequestTabViewModel tab)

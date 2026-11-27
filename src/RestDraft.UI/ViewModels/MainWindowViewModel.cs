@@ -52,6 +52,7 @@ public sealed class MainWindowViewModel : ViewModelBase
         TabStrip.Linked += OnTabLinked;
         Sidebar.Search.Applied += OnSearchApplied;
         History.Search.Applied += OnSearchApplied;
+        new ActiveRequestTracker(Sidebar, TabStrip, Layout).Start();
     }
 
     // The search popup closes when a search has been applied.

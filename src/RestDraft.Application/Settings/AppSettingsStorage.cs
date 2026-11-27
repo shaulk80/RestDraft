@@ -20,6 +20,7 @@ public sealed class AppSettingsStorage
     private const string SidebarVisibleKey = "ui.sidebarVisible";
     private const string ResponseVisibleKey = "ui.responseVisible";
     private const string TopBarVisibleKey = "ui.topBarVisible";
+    private const string TrackActiveRequestKey = "ui.trackActiveRequest";
     private const string WindowWidthKey = "ui.windowWidth";
     private const string WindowHeightKey = "ui.windowHeight";
     private const string WindowMaximizedKey = "ui.windowMaximized";
@@ -46,6 +47,7 @@ public sealed class AppSettingsStorage
         var sidebarVisible = await ReadAsync(SidebarVisibleKey, cancellationToken);
         var responseVisible = await ReadAsync(ResponseVisibleKey, cancellationToken);
         var topBarVisible = await ReadAsync(TopBarVisibleKey, cancellationToken);
+        var trackActiveRequest = await ReadAsync(TrackActiveRequestKey, cancellationToken);
         var windowWidth = await ReadAsync(WindowWidthKey, cancellationToken);
         var windowHeight = await ReadAsync(WindowHeightKey, cancellationToken);
         var windowMaximized = await ReadAsync(WindowMaximizedKey, cancellationToken);
@@ -53,7 +55,7 @@ public sealed class AppSettingsStorage
         var reads = new[]
         {
             timeout, follow, maxRedirects, verify, proxy, singleClick, theme, sidebarWidth, responseWidth,
-            sidebarVisible, responseVisible, topBarVisible, windowWidth, windowHeight, windowMaximized,
+            sidebarVisible, responseVisible, topBarVisible, trackActiveRequest, windowWidth, windowHeight, windowMaximized,
         };
         var failed = reads.FirstOrDefault(read => !read.IsSuccess);
         if (failed is not null)
@@ -75,6 +77,7 @@ public sealed class AppSettingsStorage
             SidebarVisible = ParseBool(sidebarVisible.Value, defaults.SidebarVisible),
             ResponseVisible = ParseBool(responseVisible.Value, defaults.ResponseVisible),
             TopBarVisible = ParseBool(topBarVisible.Value, defaults.TopBarVisible),
+            TrackActiveRequest = ParseBool(trackActiveRequest.Value, defaults.TrackActiveRequest),
             WindowWidth = ParseInt(windowWidth.Value, defaults.WindowWidth),
             WindowHeight = ParseInt(windowHeight.Value, defaults.WindowHeight),
             WindowMaximized = ParseBool(windowMaximized.Value, defaults.WindowMaximized),
@@ -97,6 +100,7 @@ public sealed class AppSettingsStorage
             [SidebarVisibleKey] = settings.SidebarVisible.ToString(CultureInfo.InvariantCulture),
             [ResponseVisibleKey] = settings.ResponseVisible.ToString(CultureInfo.InvariantCulture),
             [TopBarVisibleKey] = settings.TopBarVisible.ToString(CultureInfo.InvariantCulture),
+            [TrackActiveRequestKey] = settings.TrackActiveRequest.ToString(CultureInfo.InvariantCulture),
             [WindowWidthKey] = settings.WindowWidth.ToString(CultureInfo.InvariantCulture),
             [WindowHeightKey] = settings.WindowHeight.ToString(CultureInfo.InvariantCulture),
             [WindowMaximizedKey] = settings.WindowMaximized.ToString(CultureInfo.InvariantCulture),

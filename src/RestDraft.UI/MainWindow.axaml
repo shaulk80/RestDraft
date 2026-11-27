@@ -65,6 +65,8 @@
         <MenuItem Header="_Response panel" ToggleType="CheckBox" IsChecked="{Binding Layout.IsResponseVisible, Mode=TwoWay}" />
         <MenuItem Header="Environment and _secrets bar" ToggleType="CheckBox" IsChecked="{Binding Layout.IsTopBarVisible, Mode=TwoWay}" />
         <Separator />
+        <MenuItem Header="_Track active request" ToggleType="CheckBox" IsChecked="{Binding Layout.IsTrackingActiveRequest, Mode=TwoWay}" />
+        <Separator />
         <MenuItem Header="_Next request tab" Command="{Binding TabStrip.NextRecentTabCommand}" InputGesture="Ctrl+Tab" />
         <MenuItem Header="_Previous request tab" Command="{Binding TabStrip.PreviousRecentTabCommand}" InputGesture="Ctrl+Shift+Tab" />
       </MenuItem>

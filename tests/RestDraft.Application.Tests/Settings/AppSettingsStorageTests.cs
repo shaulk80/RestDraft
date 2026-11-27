@@ -42,6 +42,7 @@ public class AppSettingsStorageTests
             SidebarVisible = false,
             ResponseVisible = false,
             TopBarVisible = false,
+            TrackActiveRequest = true,
             WindowWidth = 1000,
             WindowHeight = 600,
             WindowMaximized = true,
@@ -70,6 +71,7 @@ public class AppSettingsStorageTests
     [TestCase("ui.sidebarVisible", "0")]
     [TestCase("ui.responseVisible", "")]
     [TestCase("ui.topBarVisible", "hidden")]
+    [TestCase("ui.trackActiveRequest", "on")]
     public async Task UnreadableValueFallsBackToDefault(string key, string value)
     {
         _store.Values[key] = value;

@@ -34,6 +34,9 @@ public sealed record AppSettings
 
     public bool TopBarVisible { get; init; } = true;
 
+    // The View menu: the Collections tree selects the request of the active tab. Remembered when the window closes.
+    public bool TrackActiveRequest { get; init; }
+
     // The size of the main window when it is not maximized, and whether it is maximized. Remembered when the window closes.
     public int WindowWidth { get; init; } = 1200;
 
