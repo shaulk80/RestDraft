@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using RestDraft.Application.Abstractions;
 using RestDraft.Application.Exchange;
 using RestDraft.Infrastructure.Exchange.Insomnia;
+using RestDraft.Infrastructure.Exchange.OpenApi;
 using RestDraft.Infrastructure.Http;
 using RestDraft.Infrastructure.Logging;
 using RestDraft.Infrastructure.Persistence;
@@ -59,6 +60,7 @@ public static class InfrastructureServiceCollectionExtensions
         services.AddSingleton<InsomniaV5Format>();
         services.AddSingleton<IWritableCollectionFormat>(provider => provider.GetRequiredService<InsomniaV5Format>());
         services.AddSingleton<ICollectionFormat>(provider => provider.GetRequiredService<InsomniaV5Format>());
+        services.AddSingleton<ICollectionFormat, OpenApiFormat>();
     }
 
     private static SqliteConnectionFactory CreateConnectionFactory(string dataFolder)
