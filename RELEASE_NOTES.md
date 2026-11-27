@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Search in the response. Ctrl+F in the response body opens a panel above it with a search box, Match case and Whole word. All matches are highlighted and F3 and Shift+F3 (in the box also Enter and Shift+Enter) step through them. Escape closes the panel and leaves the current match selected, ready to copy. Each tab keeps its own search. Ctrl+F elsewhere opens the filter, as before; in the response body it no longer does. In a very long line, such as a large minified body in the Raw view, selecting a match with Escape can take a few seconds.
 - "New request" in the Collections tree starts a rename of the new request. Enter saves the name and moves to the URL box, Escape keeps "New request" and moves there too, and clicking elsewhere saves the name. Before, the cursor went to the body editor.
 - View > Track active request: the Collections tree selects the request of the active tab, opens the folders above it and scrolls to it. It is off by default and remembered. The keyboard focus does not move, and a request that the filter hides is left hidden.
 - RestDraft has an icon: request and response arrows in a circle. The Windows executable, every window and the About window show it. On Linux only the windows have it, because there is no installer and no `.desktop` file.

@@ -1,6 +1,6 @@
 # New features: implementation plan
 
-Status (2026-11-27): approved. PRs 1 (#26), 2 (#28) and 3 (#29) are merged, PRs 4 to 6 are not started. Requirements and decisions: `new-features-requirements.md`.
+Status (2026-11-27): approved. PRs 1 (#26), 2 (#28) and 3 (#29) are merged, PR 4 is implemented on its branch, PRs 5 and 6 are not started. Requirements and decisions: `new-features-requirements.md`.
 
 ## 1. Delivery
 
@@ -84,6 +84,8 @@ As built, two points go beyond the steps above. Step 4 of 4.2: the tracker liste
 Tests: `TextMatchFinder`, parameterized (case, whole word with punctuation at the edges, start and end of text, repeated letters, empty query, no match); view model (wrap around, start at the cursor, new text, options); headless (Ctrl+F in the editor opens the panel and not the filter, Ctrl+F elsewhere opens the filter, F3 cycles, Escape selects the match, tab switch keeps each state, accessibility check).
 
 Manual: a response near the 1 MB preview limit searched for a single letter must stay responsive; long wrapped lines; light and dark.
+
+As built, one point goes beyond the steps above. Step 4: the renderer does not use AvaloniaEdit's `BackgroundGeometryBuilder`, because far down a very long wrapped line it takes a good part of a second per match, so a repaint took over 40 s. `VisibleTextRows` gives the rows on screen and each row gives the places of its matches. Two details the requirements leave open: with a selection, Ctrl+F starts at its beginning, so the selected text is the current match; Shift+F3 with the panel closed opens it at the match before the cursor.
 
 ## 6. PR 5: OpenAPI and Swagger files
 
