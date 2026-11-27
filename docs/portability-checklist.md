@@ -12,7 +12,7 @@ Machine: ______________________  Windows version: ______________  Date: ________
 | # | Step | Expected | Result |
 |---|---|---|---|
 | 1 | Compare the zip hash with `SHA256SUMS.txt` | Hashes are equal | |
-| 2 | Unzip into a new folder that is not the repository, for example `C:\Temp\RestDraftCheck` | One folder `RestDraft-win-x64` with `RestDraft.exe`, its DLLs (`RestDraft.*.dll` and the libraries) and `MigrationScripts\`; no `.pdb` files | |
+| 2 | Unzip into a new folder that is not the repository, for example `C:\Temp\RestDraftCheck` | One folder `RestDraft-win-x64` with `RestDraft.exe`, its DLLs (`RestDraft.*.dll` and the libraries), `MigrationScripts\`, `LICENSE`, `NOTICE` and `third-party-notices.txt`; no `.pdb` files. The Linux tarball holds the same three files | |
 | 3 | Run `RestDraft.exe` | The window opens. `data\app.db` and `data\logs\<file>` exist beside the executable | |
 | 4 | Look for `data` anywhere else (`%APPDATA%`, `%LOCALAPPDATA%`, the current directory) | Nothing there, and `%TEMP%\.net\RestDraft` is not created. The program puts nothing outside its folder (releases up to 0.2.0, which were single-file, unpacked native libraries there) | |
 | 5 | Create a collection, a folder, and a request. Enter `https://example.com`, send | Status 200 shows, the response body is displayed | |

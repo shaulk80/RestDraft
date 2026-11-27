@@ -1,6 +1,6 @@
 # New features: implementation plan
 
-Status (2026-11-26): approved, nothing implemented yet. Requirements and decisions: `new-features-requirements.md`.
+Status (2026-11-27): approved. PR 1 is implemented, PRs 2 to 6 are not started. Requirements and decisions: `new-features-requirements.md`.
 
 ## 1. Delivery
 

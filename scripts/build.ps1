@@ -12,6 +12,8 @@ $ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent $PSScriptRoot
 $solution = Join-Path $root 'RestDraft.slnx'
 $uiProject = Join-Path $root 'src/RestDraft.UI/RestDraft.UI.csproj'
+# Written by restore and publish. It names the package folders the published components come from.
+$uiAssets = Join-Path $root 'src/RestDraft.UI/obj/project.assets.json'
 $distRoot = Join-Path $root 'dist'
 
 # Licenses accepted without review, as SPDX identifiers. "Public domain" from plan section 8 maps to Unlicense and CC0-1.0.
@@ -31,7 +33,9 @@ $coverageTargets = @{
 }
 
 . (Join-Path $PSScriptRoot 'CoverageReport.ps1')
+. (Join-Path $PSScriptRoot 'NuGetPackages.ps1')
 . (Join-Path $PSScriptRoot 'LicenseCheck.ps1')
+. (Join-Path $PSScriptRoot 'ThirdPartyNotices.ps1')
 . (Join-Path $PSScriptRoot 'Checksums.ps1')
 
 function Invoke-DotNet {
@@ -169,24 +173,51 @@ function Test-PublishedAppOnLinux {
     }
 }
 
-# Extracts the package like a user would, starts the program from it, and returns true when data/app.db and a log appear.
-function Test-ReleasePackage {
+# Extracts the package like a user would, and returns the folder the program runs from.
+function Expand-ReleasePackage {
     param(
         [string] $Runtime,
         [string] $PackagePath,
         [string] $SmokeDir
     )
 
-    # The package holds one top-level folder, RestDraft-<runtime>, and the program runs from inside it.
-    $programDir = Join-Path $SmokeDir "RestDraft-$Runtime"
     if ($Runtime -like 'linux-*') {
         New-Item -ItemType Directory -Path $SmokeDir -Force | Out-Null
         Invoke-Native -FilePath 'tar' -Arguments @('-xzf', $PackagePath, '-C', $SmokeDir)
-        return (Test-PublishedAppOnLinux -PublishDir $programDir)
+    }
+    else {
+        Expand-Archive -Path $PackagePath -DestinationPath $SmokeDir -Force
     }
 
-    Expand-Archive -Path $PackagePath -DestinationPath $SmokeDir -Force
-    return (Test-PublishedApp -PublishDir $programDir)
+    # The package holds one top-level folder, RestDraft-<runtime>.
+    return Join-Path $SmokeDir "RestDraft-$Runtime"
+}
+
+# Checks the extracted package: the license files are in it, and the program started from it creates data/app.db and a
+# log. Returns what is wrong, or nothing.
+function Get-ReleasePackageFailure {
+    param(
+        [string] $Runtime,
+        [string] $PackagePath,
+        [string] $SmokeDir
+    )
+
+    $programDir = Expand-ReleasePackage -Runtime $Runtime -PackagePath $PackagePath -SmokeDir $SmokeDir
+    $missingFiles = @(Get-MissingLicenseFiles -ProgramDir $programDir)
+    if ($missingFiles.Count -gt 0) {
+        return "the package does not contain $($missingFiles -join ', ')."
+    }
+
+    if ($Runtime -like 'linux-*') {
+        $started = Test-PublishedAppOnLinux -PublishDir $programDir
+    }
+    else {
+        $started = Test-PublishedApp -PublishDir $programDir
+    }
+
+    if (-not $started) {
+        return 'the app did not create data/app.db and a log file beside the executable.'
+    }
 }
 
 Invoke-DotNet @('restore', $solution)
@@ -240,6 +271,8 @@ foreach ($runtime in $Runtimes) {
     # Native packages (SkiaSharp, HarfBuzz) bring their own .pdb files, which DebugType=none does not remove.
     Get-ChildItem -LiteralPath $publishDir -Recurse -Filter '*.pdb' | Remove-Item -Force
 
+    Add-LicenseFiles -Root $root -PublishDir $publishDir -Runtime $runtime -AssetsPath $uiAssets -ReviewedLicenses $reviewedLicenses
+
     if ($isLinuxRuntime) {
         New-ReleaseTarGz -SourceDir $publishDir -TarGzPath $packagePath
     }
@@ -253,8 +286,9 @@ foreach ($runtime in $Runtimes) {
         # Smoke-test the extracted package, the same artifact a user receives.
         $smokeDir = Join-Path $distRoot "smoke-$runtime"
         try {
-            if (-not (Test-ReleasePackage -Runtime $runtime -PackagePath $packagePath -SmokeDir $smokeDir)) {
-                throw "Smoke test failed for ${runtime}: the app did not create data/app.db and a log file beside the executable."
+            $failure = Get-ReleasePackageFailure -Runtime $runtime -PackagePath $packagePath -SmokeDir $smokeDir
+            if ($failure) {
+                throw "Smoke test failed for ${runtime}: $failure"
             }
         }
         finally {

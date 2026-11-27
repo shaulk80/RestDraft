@@ -1,6 +1,6 @@
 # New features: requirements
 
-Status (2026-11-26): all questions are answered (section 7). The implementation plan is `new-features-plan.md`. Nothing is implemented yet.
+Status (2026-11-27): all questions are answered (section 7). The implementation plan is `new-features-plan.md`, which says what is implemented.
 
 ## 1. Requested
 

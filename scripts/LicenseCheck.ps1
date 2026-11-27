@@ -1,5 +1,6 @@
 # Dependency license check. Dot-sourced by build.ps1 after restore.
-# Reads the packages in every project.assets.json under src and tests, and their nuspec files in the NuGet package folder.
+# Reads the packages in every project.assets.json under src and tests, and their nuspec files in the NuGet package folders.
+# Needs NuGetPackages.ps1.
 
 function Get-RestoredPackages {
     param([string] $Root)
@@ -11,7 +12,7 @@ function Get-RestoredPackages {
     }
 
     $assetsList = @($assetsFiles | ForEach-Object { Get-Content -Raw -LiteralPath $_.FullName | ConvertFrom-Json })
-    $packageFolder = @($assetsList[0].packageFolders.PSObject.Properties)[0].Name
+    $packageFolders = @(Get-PackageFolders -AssetsPath $assetsFiles[0].FullName)
 
     $packageKeys = @{}
     foreach ($assets in $assetsList) {
@@ -24,29 +25,10 @@ function Get-RestoredPackages {
 
     foreach ($key in ($packageKeys.Keys | Sort-Object)) {
         $id, $version = $key -split '/', 2
-        $folderName = $id.ToLowerInvariant()
-        $nuspecPath = Join-Path $packageFolder (Join-Path $folderName (Join-Path $version.ToLowerInvariant() "$folderName.nuspec"))
+        $directory = Find-PackageDirectory -PackageFolders $packageFolders -Id $id -Version $version
+        $nuspecPath = Join-Path $directory "$($id.ToLowerInvariant()).nuspec"
         [pscustomobject]@{ Id = $id; Version = $version; NuspecPath = $nuspecPath }
     }
-}
-
-function Get-NuspecLicense {
-    param([string] $NuspecPath)
-
-    [xml] $nuspec = Get-Content -Raw -LiteralPath $NuspecPath
-    $metadata = '/*[local-name()="package"]/*[local-name()="metadata"]'
-
-    $license = $nuspec.SelectSingleNode("$metadata/*[local-name()='license']")
-    if ($license) {
-        return [pscustomobject]@{ Type = $license.type; Value = $license.InnerText }
-    }
-
-    $licenseUrl = $nuspec.SelectSingleNode("$metadata/*[local-name()='licenseUrl']")
-    if ($licenseUrl) {
-        return [pscustomobject]@{ Type = 'url'; Value = $licenseUrl.InnerText }
-    }
-
-    return [pscustomobject]@{ Type = 'none'; Value = '' }
 }
 
 function Test-LicenseExpression {
@@ -71,17 +53,17 @@ function Get-LicenseStatus {
         return [pscustomobject]@{ License = "$($ReviewedLicenses[$key]) (reviewed)"; Allowed = $true }
     }
 
-    $license = Get-NuspecLicense -NuspecPath $Package.NuspecPath
-    switch ($license.Type) {
+    $metadata = Get-NuspecMetadata -NuspecPath $Package.NuspecPath
+    switch ($metadata.LicenseType) {
         'expression' {
-            $allowed = Test-LicenseExpression -Expression $license.Value -AllowedLicenses $AllowedLicenses
-            return [pscustomobject]@{ License = $license.Value; Allowed = $allowed }
+            $allowed = Test-LicenseExpression -Expression $metadata.LicenseValue -AllowedLicenses $AllowedLicenses
+            return [pscustomobject]@{ License = $metadata.LicenseValue; Allowed = $allowed }
         }
         'file' {
             return [pscustomobject]@{ License = 'license file, not reviewed'; Allowed = $false }
         }
         'url' {
-            return [pscustomobject]@{ License = "license URL only: $($license.Value)"; Allowed = $false }
+            return [pscustomobject]@{ License = "license URL only: $($metadata.LicenseValue)"; Allowed = $false }
         }
         default {
             return [pscustomobject]@{ License = 'no license declared'; Allowed = $false }
