@@ -77,8 +77,8 @@ public partial class ImportExportIntegrationTests
         _workspace = new Workspace<Collection>(_repository.LoadAsync, _repository.SaveAsync);
         var format = Create();
         _writer = new LocalFileWriter(NullLogger<LocalFileWriter>.Instance);
-        _import = new ImportService(_workspace, new LocalFileReader(NullLogger<LocalFileReader>.Instance), [format]);
-        _export = new ExportService(_workspace, _writer, [format]);
+        _import = new ImportService(_workspace, new LocalFileReader(NullLogger<LocalFileReader>.Instance), new CollectionTextReader([format]));
+        _export = new ExportService(_workspace, _writer, format);
     }
 
     [TearDown]

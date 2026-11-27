@@ -14,7 +14,7 @@ public class ExportServiceTests
 {
     private ExchangeFixtures _data = null!;
     private IFileWriter _writer = null!;
-    private ICollectionFormat _format = null!;
+    private IWritableCollectionFormat _format = null!;
     private ExportService _service = null!;
 
     [SetUp]
@@ -22,11 +22,11 @@ public class ExportServiceTests
     {
         _data = new ExchangeFixtures();
         _writer = A.Fake<IFileWriter>();
-        _format = A.Fake<ICollectionFormat>();
+        _format = A.Fake<IWritableCollectionFormat>();
         A.CallTo(() => _writer.WriteAllTextAsync(A<string>._, A<string>._, A<CancellationToken>._)).Returns(Result.Success());
         A.CallTo(() => _format.Write(A<Collection>._)).Returns(Result<string>.Success("text"));
         var repository = CollectionRepositoryFake.Create(new CollectionStore([_data.Source]));
-        _service = new ExportService(new Workspace<Collection>(repository.LoadAsync, repository.SaveAsync), _writer, [_format]);
+        _service = new ExportService(new Workspace<Collection>(repository.LoadAsync, repository.SaveAsync), _writer, _format);
     }
 
     [Test]

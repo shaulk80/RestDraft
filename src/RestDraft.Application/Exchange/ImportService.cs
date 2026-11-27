@@ -10,15 +10,16 @@ public sealed class ImportService : IImportService
 {
     private readonly Workspace<Collection> _workspace;
     private readonly IFileReader _reader;
+    private readonly CollectionTextReader _textReader;
 
-    public ImportService(Workspace<Collection> workspace, IFileReader reader, IEnumerable<ICollectionFormat> formats)
+    public ImportService(Workspace<Collection> workspace, IFileReader reader, CollectionTextReader textReader)
     {
         _workspace = workspace;
         _reader = reader;
-        Formats = formats.ToList();
+        _textReader = textReader;
     }
 
-    public IReadOnlyList<ICollectionFormat> Formats { get; }
+    public IReadOnlyList<ICollectionFormat> Formats => _textReader.Formats;
 
     public async Task<Result<ExchangeDocument>> ReadAsync(string path, CancellationToken cancellationToken)
     {
@@ -34,8 +35,7 @@ public sealed class ImportService : IImportService
                 $"The file is larger than {ExchangeLimits.MaxFileBytes / (1024 * 1024)} MB."));
         }
 
-        var text = new UTF8Encoding(false).GetString(bytes.Value).TrimStart('﻿');
-        return ReadText(text);
+        return _textReader.Read(new UTF8Encoding(false).GetString(bytes.Value));
     }
 
     public async Task<Result<ImportOutcome>> ApplyAsync(
@@ -70,33 +70,5 @@ public sealed class ImportService : IImportService
             applied.Counts,
             applied.OverwrittenRequestIds,
             document.Warnings.Count));
-    }
-
-    private Result<ExchangeDocument> ReadText(string text)
-    {
-        foreach (var format in Formats)
-        {
-            var canRead = format.CanRead(text);
-            if (!canRead.IsSuccess)
-            {
-                return Result<ExchangeDocument>.Failure(canRead.Error!);
-            }
-
-            if (canRead.Value)
-            {
-                return format.Read(text);
-            }
-        }
-
-        return Result<ExchangeDocument>.Failure(ResultErrors.Validation(NotSupportedMessage(text)));
-    }
-
-    private string NotSupportedMessage(string text)
-    {
-        var names = string.Join(", ", Formats.Select(format => format.DisplayName));
-        var message = $"The file is not in a supported format. Supported: {names}.";
-        return text.TrimStart().StartsWith('{')
-            ? message + " Insomnia v4 JSON is not supported yet."
-            : message;
     }
 }

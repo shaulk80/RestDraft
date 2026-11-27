@@ -5,7 +5,7 @@ namespace RestDraft.Infrastructure.Exchange.Insomnia;
 // Collects what is left out while a file is read. Things that are the same for many items are counted and reported once.
 internal sealed class ImportWarningLog
 {
-    private readonly List<ImportWarning> _warnings = [];
+    private readonly ImportWarningList _warnings = new();
 
     public int RequestsWithSettings { get; set; }
 
@@ -17,12 +17,12 @@ internal sealed class ImportWarningLog
 
     public void Add(string message, string? path = null)
     {
-        _warnings.Add(new ImportWarning(message, path));
+        _warnings.Add(message, path);
     }
 
     public IReadOnlyList<ImportWarning> ToList()
     {
-        var all = new List<ImportWarning>(_warnings);
+        var all = new List<ImportWarning>(_warnings.ToList());
         AddIf(all, RequestsWithSettings > 0, $"{Count(RequestsWithSettings, "request has", "requests have")} settings that RestDraft does not keep.");
         AddIf(all, ItemsWithScripts > 0, $"{Count(ItemsWithScripts, "item has", "items have")} scripts that RestDraft does not keep.");
         AddIf(all, ItemsWithDescription > 0, $"{Count(ItemsWithDescription, "item has", "items have")} a description that RestDraft does not keep.");

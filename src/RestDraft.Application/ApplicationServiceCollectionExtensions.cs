@@ -43,6 +43,7 @@ public static class ApplicationServiceCollectionExtensions
         services.AddSingleton<IFolderService, FolderService>();
         services.AddSingleton<IRequestService, RequestService>();
         services.AddSingleton<ICollectionTreeService, CollectionTreeService>();
+        services.AddSingleton<CollectionTextReader>();
         services.AddSingleton<IImportService, ImportService>();
         services.AddSingleton<IExportService, ExportService>();
         services.AddSingleton(RetentionPolicy.Default);

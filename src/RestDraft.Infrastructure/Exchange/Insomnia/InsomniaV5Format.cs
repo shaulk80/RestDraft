@@ -11,9 +11,13 @@ using YamlDotNet.Serialization.NamingConventions;
 namespace RestDraft.Infrastructure.Exchange.Insomnia;
 
 // The Insomnia v5 collection file (type collection.insomnia.rest/5.x). Any 5.x is read, and keys it does not know are ignored.
-public sealed class InsomniaV5Format : ICollectionFormat
+public sealed class InsomniaV5Format : IWritableCollectionFormat
 {
     private const string TypePrefix = "collection.insomnia.rest/5.";
+    private const string TypeKey = "type";
+
+    // Every folder is two levels (the item and its children), and a request needs about four more below the list.
+    private const int MaxDepth = (ExchangeLimits.MaxFolderDepth * 2) + 8;
 
     private static readonly Action<ILogger, string, Exception?> ReadFailed = LoggerMessage.Define<string>(
         LogLevel.Warning,
@@ -57,13 +61,13 @@ public sealed class InsomniaV5Format : ICollectionFormat
 
     public Result<bool> CanRead(string text)
     {
-        var type = InsomniaYamlScanner.FindType(text);
+        var type = YamlRootValueReader.Find(text, TypeKey);
         return Result<bool>.Success(type is not null && type.StartsWith(TypePrefix, StringComparison.Ordinal));
     }
 
     public Result<ExchangeDocument> Read(string text)
     {
-        var scanned = InsomniaYamlScanner.Validate(text);
+        var scanned = YamlSafetyCheck.Validate(text, MaxDepth, $"The file is nested deeper than {ExchangeLimits.MaxFolderDepth} folders.");
         if (!scanned.IsSuccess)
         {
             return Result<ExchangeDocument>.Failure(scanned.Error!);

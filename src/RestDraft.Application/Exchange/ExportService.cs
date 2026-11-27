@@ -11,14 +11,14 @@ public sealed class ExportService : IExportService
     private readonly Workspace<Collection> _workspace;
     private readonly IFileWriter _writer;
 
-    public ExportService(Workspace<Collection> workspace, IFileWriter writer, IEnumerable<ICollectionFormat> formats)
+    public ExportService(Workspace<Collection> workspace, IFileWriter writer, IWritableCollectionFormat format)
     {
         _workspace = workspace;
         _writer = writer;
-        Format = formats.First();
+        Format = format;
     }
 
-    public ICollectionFormat Format { get; }
+    public IWritableCollectionFormat Format { get; }
 
     public async Task<Result<ExportOutcome>> ExportAsync(
         Guid collectionId,
