@@ -189,6 +189,49 @@ public class ImportPreviewViewModelTests
         Assert.That(viewModel.TabsNotice, Is.Empty);
     }
 
+    [Test]
+    public void ADocumentWithCompleteUrlsHasNoBaseUrl()
+    {
+        var viewModel = Create([]);
+
+        Assert.That(viewModel.HasBaseUrl, Is.False);
+        Assert.That(viewModel.Request()?.BaseUrl, Is.Null);
+        Assert.That(viewModel.CanImport, Is.True);
+    }
+
+    [TestCase("https://api.example.com/v1/", "https://api.example.com/v1")]
+    [TestCase("/api", "{{base_url}}/api")]
+    [TestCase("", "{{base_url}}")]
+    public void TheBaseUrlIsFilledInFromTheDocument(string declared, string expected)
+    {
+        var viewModel = CreateWithBaseUrl(declared);
+
+        Assert.That(viewModel.HasBaseUrl, Is.True);
+        Assert.That(viewModel.BaseUrl, Is.EqualTo(expected));
+        Assert.That(viewModel.Request()?.BaseUrl, Is.EqualTo(expected));
+    }
+
+    [TestCase("")]
+    [TestCase("   ")]
+    [TestCase(null)]
+    public void ImportIsDisabledWhileTheBaseUrlIsEmpty(string? typed)
+    {
+        var viewModel = CreateWithBaseUrl("/api");
+
+        viewModel.BaseUrl = typed!;
+
+        Assert.That(viewModel.CanImport, Is.False);
+        Assert.That(viewModel.Request(), Is.Null);
+        viewModel.BaseUrl = "  {{host}} ";
+        Assert.That(viewModel.CanImport, Is.True);
+        Assert.That(viewModel.Request()?.BaseUrl, Is.EqualTo("{{host}}"));
+    }
+
+    private ImportPreviewViewModel CreateWithBaseUrl(string declared)
+    {
+        return new ImportPreviewViewModel(_document with { BaseUrl = declared }, [], null, CountTabs);
+    }
+
     private ImportPreviewViewModel Create(IReadOnlyList<Collection> existing)
     {
         return new ImportPreviewViewModel(_document, existing, null, CountTabs);

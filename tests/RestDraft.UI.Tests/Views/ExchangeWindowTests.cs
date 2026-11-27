@@ -1,3 +1,4 @@
+using Avalonia.Automation;
 using Avalonia.Controls;
 using Avalonia.Layout;
 using Avalonia.Headless;
@@ -122,6 +123,39 @@ public class ExchangeWindowTests
     }
 
     [AvaloniaTest]
+    [TestCase(null, false)]
+    [TestCase("/api", true)]
+    public void TheImportWindowShowsTheBaseUrlOnlyForADocumentThatHasOne(string? declared, bool isShown)
+    {
+        var window = new ImportPreviewWindow { DataContext = CreatePreview(declared) };
+
+        window.Show();
+        Dispatcher.UIThread.RunJobs();
+
+        Assert.That(BaseUrlBox(window).IsEffectivelyVisible, Is.EqualTo(isShown));
+        Assert.That(AccessibleNameChecker.FindUnnamed(window), Is.Empty);
+        window.Close();
+    }
+
+    [AvaloniaTest]
+    public async Task ClearingTheBaseUrlBoxDisablesImportAndTheTypedOneIsImported()
+    {
+        var window = new ImportPreviewWindow { DataContext = CreatePreview("/api") };
+        var result = ShowAsDialog<ImportRequest?>(window);
+        var box = BaseUrlBox(window);
+
+        box.Text = string.Empty;
+        Dispatcher.UIThread.RunJobs();
+        var enabledWhenEmpty = FindButton(window, "Import").IsEnabled;
+        box.Text = "http://localhost:5000";
+        Dispatcher.UIThread.RunJobs();
+        Click(window, "Import");
+
+        Assert.That(enabledWhenEmpty, Is.False);
+        Assert.That((await result)?.BaseUrl, Is.EqualTo("http://localhost:5000"));
+    }
+
+    [AvaloniaTest]
     public void SpaceTogglesTheSelectedNodeOfTheTree()
     {
         var viewModel = new ExportSelectionViewModel([_shop], _shop.Id);
@@ -191,10 +225,16 @@ public class ExchangeWindowTests
         window.Close();
     }
 
-    private ImportPreviewViewModel CreatePreview()
+    private ImportPreviewViewModel CreatePreview(string? baseUrl = null)
     {
-        var document = new ExchangeDocument(_shop with { Id = Guid.NewGuid() }, [new ImportWarning("Left out.", "Users / Login")]);
+        var document = new ExchangeDocument(_shop with { Id = Guid.NewGuid() }, [new ImportWarning("Left out.", "Users / Login")], baseUrl);
         return new ImportPreviewViewModel(document, [], null, _ => 0);
+    }
+
+    private static TextBox BaseUrlBox(Window window)
+    {
+        return window.GetVisualDescendants().OfType<TextBox>()
+            .Single(box => AutomationProperties.GetName(box) == "Base URL of the requests");
     }
 
     // A dialog needs an owner window. The dialog is on screen when this returns.
