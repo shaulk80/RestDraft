@@ -28,6 +28,7 @@ public sealed class TestHttpsServer : IAsyncDisposable
 
         _app = builder.Build();
         _app.MapGet("/ok", () => Results.Text("secure"));
+        _app.MapGet("/go", (string to) => Results.Redirect(to));
     }
 
     public Uri BaseAddress { get; private set; } = new("https://127.0.0.1");
