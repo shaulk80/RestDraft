@@ -10,6 +10,7 @@
 - RestDraft has an icon: request and response arrows in a circle. The Windows executable, every window and the About window show it. On Linux only the windows have it, because there is no installer and no `.desktop` file.
 - The packages carry `LICENSE`, `NOTICE` and `third-party-notices.txt`, which lists every component in the package with its copyright and license text. The 0.3.0 package was published without these files.
 - JSON and XML highlighting no longer uses TextMateSharp, because of a doubt about its license. The colors are about the same. In a very long line, such as a minified body, the first 10,000 characters are colored. The package is smaller.
+- Fixed: the question asked before an import replaces unsaved edits in open tabs is now titled "Confirm import" and its button says "Import". It said "Confirm delete" and "Delete".
 
 ## 0.3.0 (import and export, a filter popup and a folder package)
 
