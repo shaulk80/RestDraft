@@ -1,6 +1,6 @@
 # New features: implementation plan
 
-Status (2026-11-27): approved. PRs 1 (#26), 2 (#28), 3 (#29), 4 (#31) and 5 (#32) are merged, PR 6 is not started. Requirements and decisions: `new-features-requirements.md`.
+Status (2026-11-28): approved. PRs 1 (#26), 2 (#28), 3 (#29), 4 (#31) and 5 (#32) are merged, PR 6 is implemented on its branch and not merged. Requirements and decisions: `new-features-requirements.md`.
 
 ## 1. Delivery
 
@@ -160,6 +160,18 @@ As built (2026-11-27):
 `SwaggerPageScanner`, parameterized over page samples (Swagger UI initializer, swagger-ui-express, Swashbuckle `index.js`, springdoc `swagger-config`, FastAPI inline, Redoc); `RemoteImportService` with a fake downloader (direct, page, several choices, fallback paths, limit, nothing found); integration tests on the in-process server (header sent to the same host, not after a redirect to another one, 401, oversize, timeout, cancel); view model and headless window tests.
 
 Manual: a real Swagger UI page on the public Petstore and one local ASP.NET service with Swashbuckle; re-import with Overwrite and an open tab; a wrong address; a self-signed local service with SSL verification on and off.
+
+As built (2026-11-28):
+
+- The scanner reads two more things than section 7.1 lists: `swaggerUrl` and `swaggerUrls`, and a specification written into the page or script (`swaggerDoc` of swagger-ui-express, the `spec` option of Swagger UI), because swagger-ui-express serves no separate file by default.
+- The manual run found that the public Petstore sites no longer write a link: their script has `url: definitionURL` and picks it from a list of `host=address` pairs. The entry for the host of the page is used when there is no other link.
+- A script is read when it is `index.js` or its name holds `init` or `config`, it is not minified, and it is on the scheme, host and port of the page.
+- With a `configUrl`, the links of that file win. When it gives none, only links of the page to its own host are used, because Swagger UI keeps the link to its sample there.
+- The usual paths are also tried when the linked address fails. A text that a format knows but cannot read ends the search with its reason. A typed address that gives neither a specification nor a page ends it without the usual paths.
+- A redirect never leads from HTTPS to HTTP, as in the HTTP handler of .NET.
+- Cancel during a download stops it and keeps the dialog; a second Cancel closes it.
+- The remembered base URL goes with the typed address only. On a page with several specifications it is offered whichever one is chosen, which the preview shows and lets the user change.
+- More classes than sections 7.1 to 7.3 name, one job each: `SpecificationSearch`, `SwaggerPageSearch`, `ScriptText`, `UsualSpecificationPaths`, `WebAddress`, `ImportAddressMemory` and the result records.
 
 ## 8. Risks
 

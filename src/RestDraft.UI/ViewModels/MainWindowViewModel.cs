@@ -16,6 +16,7 @@ public sealed class MainWindowViewModel : ViewModelBase
     private readonly IExchangeDialogs _exchangeDialogs;
     private readonly AsyncRelayCommand _settingsCommand;
     private readonly AsyncRelayCommand _importCommand;
+    private readonly AsyncRelayCommand _importFromUrlCommand;
     private readonly AsyncRelayCommand _exportCommand;
     private ThemePreference _theme = AppSettings.Default.Theme;
     private int _sidebarTabIndex;
@@ -43,6 +44,7 @@ public sealed class MainWindowViewModel : ViewModelBase
         _exchangeDialogs = exchangeDialogs;
         _settingsCommand = new AsyncRelayCommand(ShowSettingsAsync, () => true);
         _importCommand = new AsyncRelayCommand(ImportAsync, () => true);
+        _importFromUrlCommand = new AsyncRelayCommand(ImportFromUrlAsync, () => true);
         _exportCommand = new AsyncRelayCommand(ExportAsync, () => Sidebar.HasCollections);
         Sidebar.RequestOpenRequested += OnRequestOpenRequested;
         Sidebar.RequestCreated += OnRequestCreated;
@@ -73,6 +75,8 @@ public sealed class MainWindowViewModel : ViewModelBase
     public ICommand SettingsCommand => _settingsCommand;
 
     public ICommand ImportCommand => _importCommand;
+
+    public ICommand ImportFromUrlCommand => _importFromUrlCommand;
 
     // There is nothing to export before the first collection exists.
     public ICommand ExportCommand => _exportCommand;
@@ -166,6 +170,13 @@ public sealed class MainWindowViewModel : ViewModelBase
     {
         Notice = string.Empty;
         var outcome = await _exchangeDialogs.ImportAsync(Sidebar.SelectedCollectionId, CancellationToken.None);
+        await ShowOutcomeAsync(outcome);
+    }
+
+    private async Task ImportFromUrlAsync()
+    {
+        Notice = string.Empty;
+        var outcome = await _exchangeDialogs.ImportFromUrlAsync(Sidebar.SelectedCollectionId, CancellationToken.None);
         await ShowOutcomeAsync(outcome);
     }
 

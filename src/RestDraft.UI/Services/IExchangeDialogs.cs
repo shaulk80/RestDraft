@@ -7,5 +7,8 @@ public interface IExchangeDialogs
     // The collection selected in the tree, if any, is preselected as the target.
     Task<ExchangeOutcome> ImportAsync(Guid? selectedCollectionId, CancellationToken cancellationToken);
 
+    // The same import, of a specification that is downloaded from a typed address.
+    Task<ExchangeOutcome> ImportFromUrlAsync(Guid? selectedCollectionId, CancellationToken cancellationToken);
+
     Task<ExchangeOutcome> ExportAsync(Guid? selectedCollectionId, CancellationToken cancellationToken);
 }

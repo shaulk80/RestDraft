@@ -67,6 +67,12 @@ public sealed class TestHttpServer : IAsyncDisposable
             return Results.Text("done");
         });
         app.MapGet("/bytes/{size:int}", (int size) => Results.Bytes(new byte[size]));
+        // The same without a Content-Length, so only reading tells how large it is.
+        app.MapGet("/stream/{size:int}", (int size) => Results.Stream(stream => stream.WriteAsync(new byte[size]).AsTask()));
+        app.MapGet("/status/{code:int}", (int code) => Results.StatusCode(code));
+        app.MapGet("/go", (string to) => Results.Redirect(to));
+        app.MapGet("/token", (HttpRequest request) => Results.Text(request.Headers["X-Token"].ToString()));
+        app.MapGet("/marked", () => Results.Bytes([0xEF, 0xBB, 0xBF, (byte)'o', (byte)'k']));
         app.Map("/echo/{**path}", EchoAsync);
     }
 }

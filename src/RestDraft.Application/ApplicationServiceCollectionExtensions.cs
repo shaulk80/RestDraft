@@ -4,6 +4,7 @@ using RestDraft.Application.Bodies;
 using RestDraft.Application.Collections;
 using RestDraft.Application.Environments;
 using RestDraft.Application.Exchange;
+using RestDraft.Application.Exchange.Remote;
 using RestDraft.Application.History;
 using RestDraft.Application.Requests;
 using RestDraft.Application.Secrets;
@@ -45,6 +46,8 @@ public static class ApplicationServiceCollectionExtensions
         services.AddSingleton<ICollectionTreeService, CollectionTreeService>();
         services.AddSingleton<CollectionTextReader>();
         services.AddSingleton<IImportService, ImportService>();
+        services.AddSingleton<IRemoteImportService, RemoteImportService>();
+        services.AddSingleton<ImportAddressMemory>();
         services.AddSingleton<IExportService, ExportService>();
         services.AddSingleton(RetentionPolicy.Default);
         services.AddSingleton<HistoryRetention>();

@@ -51,6 +51,21 @@ public class MainWindowExchangeTests
     }
 
     [Test]
+    public async Task ImportFromAnAddressOffersTheSelectedCollectionAndShowsTheOutcome()
+    {
+        _window.Sidebar.SelectedNode = _window.Sidebar.Roots.Single().Children.First();
+        A.CallTo(() => _exchange.ImportFromUrlAsync(A<Guid?>._, A<CancellationToken>._))
+            .Returns(Task.FromResult(ExchangeOutcome.Imported("Imported 2 new requests into 'Shop'.", _fixtures.Shop.Id, [])));
+
+        _window.ImportFromUrlCommand.Execute(null);
+        await WaitUntil(() => _window.Notice.Length > 0);
+
+        Assert.That(_window.Notice, Is.EqualTo("Imported 2 new requests into 'Shop'."));
+        Assert.That(_window.Sidebar.SelectedNode?.Id, Is.EqualTo(_fixtures.Shop.Id));
+        A.CallTo(() => _exchange.ImportFromUrlAsync(_fixtures.Shop.Id, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
+    }
+
+    [Test]
     public async Task TheCollectionSelectedInTheTreeIsOfferedAsTheTarget()
     {
         _window.Sidebar.SelectedNode = _window.Sidebar.Roots.Single().Children.First();

@@ -24,6 +24,8 @@ public sealed class AppSettingsStorage
     private const string WindowWidthKey = "ui.windowWidth";
     private const string WindowHeightKey = "ui.windowHeight";
     private const string WindowMaximizedKey = "ui.windowMaximized";
+    private const string LastImportUrlKey = "import.lastUrl";
+    private const string LastImportBaseUrlKey = "import.lastBaseUrl";
 
     private readonly ISettingsStore _store;
 
@@ -51,11 +53,14 @@ public sealed class AppSettingsStorage
         var windowWidth = await ReadAsync(WindowWidthKey, cancellationToken);
         var windowHeight = await ReadAsync(WindowHeightKey, cancellationToken);
         var windowMaximized = await ReadAsync(WindowMaximizedKey, cancellationToken);
+        var lastImportUrl = await ReadAsync(LastImportUrlKey, cancellationToken);
+        var lastImportBaseUrl = await ReadAsync(LastImportBaseUrlKey, cancellationToken);
 
         var reads = new[]
         {
             timeout, follow, maxRedirects, verify, proxy, singleClick, theme, sidebarWidth, responseWidth,
             sidebarVisible, responseVisible, topBarVisible, trackActiveRequest, windowWidth, windowHeight, windowMaximized,
+            lastImportUrl, lastImportBaseUrl,
         };
         var failed = reads.FirstOrDefault(read => !read.IsSuccess);
         if (failed is not null)
@@ -81,6 +86,8 @@ public sealed class AppSettingsStorage
             WindowWidth = ParseInt(windowWidth.Value, defaults.WindowWidth),
             WindowHeight = ParseInt(windowHeight.Value, defaults.WindowHeight),
             WindowMaximized = ParseBool(windowMaximized.Value, defaults.WindowMaximized),
+            LastImportUrl = lastImportUrl.Value ?? defaults.LastImportUrl,
+            LastImportBaseUrl = lastImportBaseUrl.Value ?? defaults.LastImportBaseUrl,
         });
     }
 
@@ -104,6 +111,8 @@ public sealed class AppSettingsStorage
             [WindowWidthKey] = settings.WindowWidth.ToString(CultureInfo.InvariantCulture),
             [WindowHeightKey] = settings.WindowHeight.ToString(CultureInfo.InvariantCulture),
             [WindowMaximizedKey] = settings.WindowMaximized.ToString(CultureInfo.InvariantCulture),
+            [LastImportUrlKey] = settings.LastImportUrl,
+            [LastImportBaseUrlKey] = settings.LastImportBaseUrl,
         };
 
         foreach (var (key, value) in values)

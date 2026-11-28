@@ -44,5 +44,11 @@ public sealed record AppSettings
 
     public bool WindowMaximized { get; init; }
 
+    // The address of the last import from an address, without a user name or password, and the base URL used with it.
+    // Remembered after a successful import.
+    public string LastImportUrl { get; init; } = string.Empty;
+
+    public string LastImportBaseUrl { get; init; } = string.Empty;
+
     public TimeSpan Timeout => TimeSpan.FromSeconds(TimeoutSeconds);
 }
