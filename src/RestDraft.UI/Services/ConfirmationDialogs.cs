@@ -5,14 +5,14 @@ namespace RestDraft.UI.Services;
 
 public sealed class ConfirmationDialogs : IConfirmationDialogs
 {
-    public Task<bool> ConfirmAsync(string message, CancellationToken cancellationToken)
+    public Task<bool> ConfirmAsync(ConfirmationRequest request, CancellationToken cancellationToken)
     {
         if (MainWindowLocator.Find() is not { } owner)
         {
             return Task.FromResult(false);
         }
 
-        var window = new ConfirmationWindow { DataContext = new ConfirmationViewModel(message) };
+        var window = new ConfirmationWindow { DataContext = new ConfirmationViewModel(request) };
         return window.ShowDialog<bool>(owner);
     }
 }

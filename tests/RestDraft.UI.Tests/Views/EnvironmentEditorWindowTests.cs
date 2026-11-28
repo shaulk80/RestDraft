@@ -245,7 +245,7 @@ public class EnvironmentEditorWindowTests
         A.CallTo(() => _environments.DeleteAsync(A<Guid>._, A<CancellationToken>._)).Returns(Task.FromResult(Result.Success()));
         A.CallTo(() => _environments.RenameAsync(A<Guid>._, A<string>._, A<CancellationToken>._)).Returns(Task.FromResult(Result.Success()));
         _confirmations = A.Fake<IConfirmationDialogs>();
-        A.CallTo(() => _confirmations.ConfirmAsync(A<string>._, A<CancellationToken>._)).Returns(Task.FromResult(true));
+        A.CallTo(() => _confirmations.ConfirmAsync(A<ConfirmationRequest>._, A<CancellationToken>._)).Returns(Task.FromResult(true));
         _viewModel = new EnvironmentEditorViewModel(_environments, A.Fake<ISecretPrompt>(), _confirmations);
         await _viewModel.ReloadAsync();
         _window = new EnvironmentEditorWindow { DataContext = _viewModel };

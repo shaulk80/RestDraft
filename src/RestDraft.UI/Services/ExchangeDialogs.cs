@@ -203,7 +203,8 @@ public sealed class ExchangeDialogs : IExchangeDialogs
         }
 
         var tabs = request.OpenTabsWithEdits == 1 ? "1 open tab has" : $"{request.OpenTabsWithEdits} open tabs have";
-        return await _confirmations.ConfirmAsync($"{tabs} unsaved edits that the import replaces. Import anyway?", cancellationToken);
+        var question = ConfirmationRequest.Import($"{tabs} unsaved edits that the import replaces. Import anyway?");
+        return await _confirmations.ConfirmAsync(question, cancellationToken);
     }
 
     private async Task<ExchangeOutcome> ApplyAsync(ExchangeDocument document, ImportRequest request, CancellationToken cancellationToken)

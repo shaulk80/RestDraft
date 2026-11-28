@@ -38,7 +38,7 @@ public class EnvironmentEditorViewModelTests
         A.CallTo(() => _environments.CreateAsync(A<string>._, A<CancellationToken>._))
             .Returns(Task.FromResult(Result<Guid>.Success(StagingId)));
         _confirmations = A.Fake<IConfirmationDialogs>();
-        A.CallTo(() => _confirmations.ConfirmAsync(A<string>._, A<CancellationToken>._)).Returns(Task.FromResult(true));
+        A.CallTo(() => _confirmations.ConfirmAsync(A<ConfirmationRequest>._, A<CancellationToken>._)).Returns(Task.FromResult(true));
         _viewModel = new EnvironmentEditorViewModel(_environments, A.Fake<ISecretPrompt>(), _confirmations);
         await _viewModel.ReloadAsync();
     }
@@ -189,7 +189,7 @@ public class EnvironmentEditorViewModelTests
     [Test]
     public async Task DeleteDoesNothingWhenUserCancels()
     {
-        A.CallTo(() => _confirmations.ConfirmAsync(A<string>._, A<CancellationToken>._)).Returns(Task.FromResult(false));
+        A.CallTo(() => _confirmations.ConfirmAsync(A<ConfirmationRequest>._, A<CancellationToken>._)).Returns(Task.FromResult(false));
 
         await _viewModel.DeleteAsync();
 

@@ -5,6 +5,8 @@ using Avalonia.Threading;
 using Avalonia.VisualTree;
 using NUnit.Framework;
 using RestDraft.UI.Behaviors;
+using RestDraft.UI.Services;
+using RestDraft.UI.ViewModels;
 using RestDraft.UI.Views;
 
 namespace RestDraft.UI.Tests.Views;
@@ -87,7 +89,7 @@ public class DialogAccessibilityTests
     [AvaloniaTest]
     public void ConfirmationDialogControlsAreNamed()
     {
-        Show(new ConfirmationWindow());
+        Show(new ConfirmationWindow { DataContext = new ConfirmationViewModel(ConfirmationRequest.Import("Import anyway?")) });
 
         Assert.That(AccessibleNameChecker.FindUnnamed(_window!), Is.Empty);
     }
