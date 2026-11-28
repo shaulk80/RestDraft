@@ -1,6 +1,9 @@
+using Avalonia.Controls;
 using RestDraft.Application.Collections;
 using RestDraft.Application.Exchange;
+using RestDraft.Application.Exchange.Remote;
 using RestDraft.Domain.Collections;
+using RestDraft.Domain.Results;
 using RestDraft.UI.ViewModels;
 using RestDraft.UI.Views;
 
@@ -9,6 +12,8 @@ namespace RestDraft.UI.Services;
 public sealed class ExchangeDialogs : IExchangeDialogs
 {
     private readonly IImportService _import;
+    private readonly IRemoteImportService _remoteImport;
+    private readonly ImportAddressMemory _addresses;
     private readonly IExportService _export;
     private readonly ICollectionService _collections;
     private readonly IExchangeFilePicker _filePicker;
@@ -17,6 +22,8 @@ public sealed class ExchangeDialogs : IExchangeDialogs
 
     public ExchangeDialogs(
         IImportService import,
+        IRemoteImportService remoteImport,
+        ImportAddressMemory addresses,
         IExportService export,
         ICollectionService collections,
         IExchangeFilePicker filePicker,
@@ -24,6 +31,8 @@ public sealed class ExchangeDialogs : IExchangeDialogs
         TabStripViewModel tabs)
     {
         _import = import;
+        _remoteImport = remoteImport;
+        _addresses = addresses;
         _export = export;
         _collections = collections;
         _filePicker = filePicker;
@@ -50,19 +59,56 @@ public sealed class ExchangeDialogs : IExchangeDialogs
             return ExchangeOutcome.Failed(ErrorMessageFormatter.Format(read.Error!));
         }
 
-        var existing = await _collections.ListAsync(cancellationToken);
-        if (!existing.IsSuccess)
+        var confirmed = await ConfirmImportAsync(read.Value!, selectedCollectionId, null, null, cancellationToken);
+        if (!confirmed.IsSuccess)
         {
-            return ExchangeOutcome.Failed(ErrorMessageFormatter.Format(existing.Error!));
+            return ExchangeOutcome.Failed(ErrorMessageFormatter.Format(confirmed.Error!));
         }
 
-        var request = await ShowPreviewAsync(read.Value!, existing.Value!, selectedCollectionId);
-        if (request is null || !await ConfirmReplacedEditsAsync(request, cancellationToken))
+        return confirmed.Value is { } request
+            ? await ApplyAsync(read.Value!, request, cancellationToken)
+            : ExchangeOutcome.Cancelled;
+    }
+
+    public async Task<ExchangeOutcome> ImportFromUrlAsync(Guid? selectedCollectionId, CancellationToken cancellationToken)
+    {
+        var remembered = await _addresses.RecallAsync(cancellationToken);
+        if (!remembered.IsSuccess)
+        {
+            return ExchangeOutcome.Failed(ErrorMessageFormatter.Format(remembered.Error!));
+        }
+
+        if (MainWindowLocator.Find() is not { } owner)
         {
             return ExchangeOutcome.Cancelled;
         }
 
-        return await ApplyAsync(read.Value!, request, cancellationToken);
+        var found = await ShowUrlDialogAsync(owner, remembered.Value!.Address);
+        if (found is null)
+        {
+            return ExchangeOutcome.Cancelled;
+        }
+
+        var confirmed = await ConfirmImportAsync(
+            found.Document,
+            selectedCollectionId,
+            found.DownloadAddress,
+            remembered.Value.BaseUrlFor(found.TypedAddress),
+            cancellationToken);
+        if (!confirmed.IsSuccess)
+        {
+            return ExchangeOutcome.Failed(ErrorMessageFormatter.Format(confirmed.Error!));
+        }
+
+        if (confirmed.Value is not { } request)
+        {
+            return ExchangeOutcome.Cancelled;
+        }
+
+        var outcome = await ApplyAsync(found.Document, request, cancellationToken);
+        return outcome.Changed
+            ? await RememberAddressAsync(outcome, found.TypedAddress, request.BaseUrl, cancellationToken)
+            : outcome;
     }
 
     public async Task<ExchangeOutcome> ExportAsync(Guid? selectedCollectionId, CancellationToken cancellationToken)
@@ -87,15 +133,54 @@ public sealed class ExchangeDialogs : IExchangeDialogs
         return await WriteAsync(selection, cancellationToken);
     }
 
-    private async Task<ImportRequest?> ShowPreviewAsync(ExchangeDocument document, IReadOnlyList<Collection> existing, Guid? selectedCollectionId)
+    private async Task<ImportUrlResult?> ShowUrlDialogAsync(Window owner, string address)
     {
-        if (MainWindowLocator.Find() is not { } owner)
+        var viewModel = new ImportUrlViewModel(_remoteImport, address);
+        return await new ImportUrlWindow { DataContext = viewModel }.ShowDialog<ImportUrlResult?>(owner);
+    }
+
+    // The preview and the second question about open tabs. Null when the user cancelled.
+    private async Task<Result<ImportRequest?>> ConfirmImportAsync(
+        ExchangeDocument document,
+        Guid? selectedCollectionId,
+        Uri? downloadAddress,
+        string? rememberedBaseUrl,
+        CancellationToken cancellationToken)
+    {
+        var existing = await _collections.ListAsync(cancellationToken);
+        if (!existing.IsSuccess)
         {
-            return null;
+            return Result<ImportRequest?>.Failure(existing.Error!);
         }
 
-        var viewModel = new ImportPreviewViewModel(document, existing, selectedCollectionId, _tabs.CountLinkedTabsWithEdits);
-        return await new ImportPreviewWindow { DataContext = viewModel }.ShowDialog<ImportRequest?>(owner);
+        if (MainWindowLocator.Find() is not { } owner)
+        {
+            return Result<ImportRequest?>.Success(null);
+        }
+
+        var viewModel = new ImportPreviewViewModel(
+            document,
+            existing.Value!,
+            selectedCollectionId,
+            _tabs.CountLinkedTabsWithEdits,
+            downloadAddress,
+            rememberedBaseUrl);
+        var request = await new ImportPreviewWindow { DataContext = viewModel }.ShowDialog<ImportRequest?>(owner);
+        if (request is null || !await ConfirmReplacedEditsAsync(request, cancellationToken))
+        {
+            return Result<ImportRequest?>.Success(null);
+        }
+
+        return Result<ImportRequest?>.Success(request);
+    }
+
+    // The import is done by now, so a failure here only adds to its message.
+    private async Task<ExchangeOutcome> RememberAddressAsync(ExchangeOutcome outcome, Uri address, string? baseUrl, CancellationToken cancellationToken)
+    {
+        var remembered = await _addresses.RememberAsync(address, baseUrl, cancellationToken);
+        return remembered.IsSuccess
+            ? outcome
+            : outcome with { Message = $"{outcome.Message} The address was not remembered: {ErrorMessageFormatter.Format(remembered.Error!)}" };
     }
 
     private static async Task<ExportSelection?> ShowSelectionAsync(IReadOnlyList<Collection> collections, Guid? selectedCollectionId)

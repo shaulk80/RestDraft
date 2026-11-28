@@ -227,6 +227,31 @@ public class ImportPreviewViewModelTests
         Assert.That(viewModel.Request()?.BaseUrl, Is.EqualTo("{{host}}"));
     }
 
+    // A downloaded document without a server address, or with a relative one, takes the address it came from.
+    [TestCase("", null, "http://api.test:8080")]
+    [TestCase("/v2", null, "http://api.test:8080/v2")]
+    [TestCase("https://other.test/v2", null, "https://other.test/v2")]
+    [TestCase("/v2", "{{base_url}}", "{{base_url}}")]
+    [TestCase("https://other.test/v2", "http://localhost:5000", "http://localhost:5000")]
+    public void TheBaseUrlOfADownloadIsTheRememberedOneOrComesFromItsAddress(string declared, string? remembered, string expected)
+    {
+        var downloaded = new Uri("http://api.test:8080/swagger/v1/swagger.json");
+
+        var viewModel = new ImportPreviewViewModel(_document with { BaseUrl = declared }, [], null, CountTabs, downloaded, remembered);
+
+        Assert.That(viewModel.BaseUrl, Is.EqualTo(expected));
+        Assert.That(viewModel.Request()?.BaseUrl, Is.EqualTo(expected));
+    }
+
+    [Test]
+    public void ARememberedBaseUrlIsIgnoredForADocumentWithCompleteUrls()
+    {
+        var viewModel = new ImportPreviewViewModel(_document, [], null, CountTabs, new Uri("http://api.test/"), "http://localhost");
+
+        Assert.That(viewModel.HasBaseUrl, Is.False);
+        Assert.That(viewModel.Request()?.BaseUrl, Is.Null);
+    }
+
     private ImportPreviewViewModel CreateWithBaseUrl(string declared)
     {
         return new ImportPreviewViewModel(_document with { BaseUrl = declared }, [], null, CountTabs);

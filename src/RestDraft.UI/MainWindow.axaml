@@ -43,6 +43,7 @@
         <MenuItem Header="_Close tab" Command="{Binding TabStrip.CloseSelectedCommand}" InputGesture="Ctrl+F4" />
         <Separator />
         <MenuItem Header="_Import..." Command="{Binding ImportCommand}" />
+        <MenuItem Header="Import _from URL..." Command="{Binding ImportFromUrlCommand}" />
         <MenuItem Header="_Export..." Command="{Binding ExportCommand}" />
         <Separator />
         <MenuItem Header="Se_ttings..." Command="{Binding SettingsCommand}" />

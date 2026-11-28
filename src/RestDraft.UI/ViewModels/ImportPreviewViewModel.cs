@@ -26,12 +26,15 @@ public sealed class ImportPreviewViewModel : ViewModelBase
     private bool _canImport;
 
     // countTabsWithEdits gets the ids of the requests that the import replaces and says how many open tabs of them have
-    // unsaved edits.
+    // unsaved edits. A downloaded document has its download address; rememberedBaseUrl is the base URL used the last time
+    // the same address was imported.
     public ImportPreviewViewModel(
         ExchangeDocument document,
         IReadOnlyList<Collection> existing,
         Guid? preselectedCollectionId,
-        Func<IReadOnlyCollection<Guid>, int> countTabsWithEdits)
+        Func<IReadOnlyCollection<Guid>, int> countTabsWithEdits,
+        Uri? downloadAddress = null,
+        string? rememberedBaseUrl = null)
     {
         _document = document;
         _existing = existing;
@@ -39,7 +42,7 @@ public sealed class ImportPreviewViewModel : ViewModelBase
         ExistingCollections = existing.Select(collection => new CollectionChoice(collection.Id, collection.Name)).ToList();
         _selectedExisting = ExistingCollections.FirstOrDefault(choice => choice.Id == preselectedCollectionId) ?? (ExistingCollections.Count > 0 ? ExistingCollections[0] : null);
         _newName = ChildNameRules.NextAvailableName(document.Collection.Name, existing.Select(collection => collection.Name).ToList());
-        _baseUrl = document.BaseUrl is null ? string.Empty : BaseUrlResolver.Resolve(document.BaseUrl, downloadAddress: null);
+        _baseUrl = document.BaseUrl is null ? string.Empty : rememberedBaseUrl ?? BaseUrlResolver.Resolve(document.BaseUrl, downloadAddress);
         Warnings = document.Warnings.Select(FormatWarning).ToList();
         _selectAllCommand = new RelayCommand(Tree.SelectAll, () => true);
         _clearAllCommand = new RelayCommand(Tree.ClearAll, () => true);

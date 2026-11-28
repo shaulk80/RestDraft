@@ -1,0 +1,61 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:RestDraft.UI.ViewModels"
+        xmlns:views="using:RestDraft.UI.Views"
+        xmlns:remote="using:RestDraft.Application.Exchange.Remote"
+        xmlns:behaviors="using:RestDraft.UI.Behaviors"
+        x:Class="RestDraft.UI.Views.ImportUrlWindow"
+        x:DataType="vm:ImportUrlViewModel"
+        Title="Import from URL"
+        Width="600"
+        SizeToContent="Height"
+        CanResize="False"
+        WindowStartupLocation="CenterOwner">
+  <StackPanel Margin="12" Spacing="8">
+    <TextBlock Text="URL of a specification or of a Swagger UI page" />
+    <TextBox Text="{Binding Address}"
+             PlaceholderText="https://localhost:5001/swagger/index.html"
+             IsReadOnly="{Binding IsBusy}"
+             AutomationProperties.Name="URL of the specification or of the Swagger UI page"
+             behaviors:InitialFocus.IsTarget="True" />
+    <Expander Header="Request headers (optional)"
+              HorizontalAlignment="Stretch"
+              IsEnabled="{Binding !IsBusy}"
+              AutomationProperties.Name="Request headers, optional">
+      <StackPanel Spacing="6">
+        <TextBlock Text="Sent only to the host of the URL above, as typed. They are not stored." TextWrapping="Wrap" />
+        <ScrollViewer MaxHeight="160">
+          <views:KeyValueEditorView DataContext="{Binding Headers}" />
+        </ScrollViewer>
+      </StackPanel>
+    </Expander>
+    <StackPanel Spacing="4" IsVisible="{Binding HasChoices}">
+      <TextBlock Text="Specification" />
+      <ComboBox HorizontalAlignment="Stretch"
+                ItemsSource="{Binding Choices}"
+                SelectedItem="{Binding SelectedChoice}"
+                IsEnabled="{Binding !IsBusy}"
+                AutomationProperties.Name="Specification to import">
+        <ComboBox.ItemTemplate>
+          <DataTemplate x:DataType="remote:SpecificationLink">
+            <TextBlock Text="{Binding Name}" />
+          </DataTemplate>
+        </ComboBox.ItemTemplate>
+      </ComboBox>
+    </StackPanel>
+    <ProgressBar IsIndeterminate="True"
+                 IsVisible="{Binding IsBusy}"
+                 AutomationProperties.Name="Download progress" />
+    <TextBlock Text="{Binding Status}" TextWrapping="Wrap" AutomationProperties.LiveSetting="Polite" />
+    <ScrollViewer MaxHeight="160">
+      <TextBlock Classes="error"
+                 Text="{Binding Error}"
+                 TextWrapping="Wrap"
+                 AutomationProperties.LiveSetting="Polite" />
+    </ScrollViewer>
+    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+      <Button Content="Next" IsDefault="True" Command="{Binding NextCommand}" />
+      <Button Content="Cancel" IsCancel="True" Click="OnCancelClick" />
+    </StackPanel>
+  </StackPanel>
+</Window>

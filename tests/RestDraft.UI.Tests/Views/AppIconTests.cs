@@ -45,6 +45,7 @@ public class AppIconTests
         yield return Case<EnvironmentEditorWindow>(() => new EnvironmentEditorWindow());
         yield return Case<ExportSelectionWindow>(() => new ExportSelectionWindow());
         yield return Case<ImportPreviewWindow>(() => new ImportPreviewWindow());
+        yield return Case<ImportUrlWindow>(() => new ImportUrlWindow());
         yield return Case<MasterPasswordSetupWindow>(() => new MasterPasswordSetupWindow());
         yield return Case<SaveChangesWindow>(() => new SaveChangesWindow());
         yield return Case<SaveDestinationWindow>(() => new SaveDestinationWindow());
