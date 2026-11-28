@@ -46,6 +46,8 @@ public class AppSettingsStorageTests
             WindowWidth = 1000,
             WindowHeight = 600,
             WindowMaximized = true,
+            LastImportUrl = "https://localhost:5001/swagger",
+            LastImportBaseUrl = "{{base_url}}/v1",
         };
 
         await _storage.SaveAsync(settings, CancellationToken.None);

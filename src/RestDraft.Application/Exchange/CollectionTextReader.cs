@@ -16,6 +16,12 @@ public sealed class CollectionTextReader
 
     public Result<ExchangeDocument> Read(string text)
     {
+        return TryRead(text) ?? Result<ExchangeDocument>.Failure(ResultErrors.Validation(NotSupportedMessage(text)));
+    }
+
+    // Null when no format knows the text. A failure means that a format knows it but cannot read it.
+    public Result<ExchangeDocument>? TryRead(string text)
+    {
         var content = text.TrimStart(ByteOrderMark);
         foreach (var format in Formats)
         {
@@ -31,14 +37,14 @@ public sealed class CollectionTextReader
             }
         }
 
-        return Result<ExchangeDocument>.Failure(ResultErrors.Validation(NotSupportedMessage(content)));
+        return null;
     }
 
     private string NotSupportedMessage(string text)
     {
         var names = string.Join(", ", Formats.Select(format => format.DisplayName));
         var message = $"The file is not in a supported format. Supported: {names}.";
-        return text.TrimStart().StartsWith('{')
+        return text.TrimStart(ByteOrderMark).TrimStart().StartsWith('{')
             ? message + " Insomnia v4 JSON is not supported yet."
             : message;
     }
