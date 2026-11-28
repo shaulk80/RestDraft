@@ -1,16 +1,36 @@
 # Release notes
 
-## Unreleased
+## 0.4.0 (OpenAPI import, search in the response and an app icon)
+
+Import of API specifications from a file or a URL, search in the response, drag reordering, an app icon, and several fixes. The packages are the same as in 0.3.0: `RestDraft-win-x64.zip`, `RestDraft-linux-x64.tar.gz` and `SHA256SUMS.txt`, built by GitHub Actions from the release tag. To upgrade, unzip into a new folder and copy the old `data` folder into the new program folder (or point to it with `--data-dir` or `RESTDRAFT_DATA_DIR`).
+
+### What changed
 
 - Import from a URL. File > Import from URL... takes the address of a Swagger or OpenAPI specification, or of a Swagger UI or Redoc page, and finds the specification; a page with several asks which one. Optional request headers go only to the host of the typed address and are not stored. The last URL and its base URL are remembered, without a user name or password. On a page that offers several specifications, the base URL remembered for the page is offered whichever of them you choose, so check it in the preview.
 - Import of API specifications. File > Import... also reads Swagger 2.0 and OpenAPI 3.0 and 3.1 files, in JSON or YAML: one folder per tag, one request per operation, with parameters, a sample body, and authentication set with variables. The preview has a new Base URL box. The file dialog starts on "All supported files", which now includes `.json`. What is not imported is listed as warnings. A nested object in a form body is written as JSON text into one field. New dependency: Microsoft.OpenApi 3.11.1 (MIT licence).
 - Search in the response. Ctrl+F in the response body opens a panel above it with a search box, Match case and Whole word. All matches are highlighted and F3 and Shift+F3 (in the box also Enter and Shift+Enter) step through them. Escape closes the panel and leaves the current match selected, ready to copy. Each tab keeps its own search. Ctrl+F elsewhere opens the filter, as before; in the response body it no longer does. In a very long line, such as a large minified body in the Raw view, selecting a match with Escape can take a few seconds.
 - "New request" in the Collections tree starts a rename of the new request. Enter saves the name and moves to the URL box, Escape keeps "New request" and moves there too, and clicking elsewhere saves the name. Before, the cursor went to the body editor.
 - View > Track active request: the Collections tree selects the request of the active tab, opens the folders above it and scrolls to it. It is off by default and remembered. The keyboard focus does not move, and a request that the filter hides is left hidden.
+- Reorder by dragging. Request tabs can be dragged to a new place, and the order is kept after a restart. In the Collections tree a folder or a request can be dropped above or below another item, or into a folder, and a line or a frame shows where it will go. Folders stay above requests, and collections cannot be moved.
 - RestDraft has an icon: request and response arrows in a circle. The Windows executable, every window and the About window show it. On Linux only the windows have it, because there is no installer and no `.desktop` file.
 - The packages carry `LICENSE`, `NOTICE` and `third-party-notices.txt`, which lists every component in the package with its copyright and license text. The 0.3.0 package was published without these files.
 - JSON and XML highlighting no longer uses TextMateSharp, because of a doubt about its license. The colors are about the same. In a very long line, such as a minified body, the first 10,000 characters are colored. The package is smaller.
 - Fixed: the question asked before an import replaces unsaved edits in open tabs is now titled "Confirm import" and its button says "Import". It said "Confirm delete" and "Delete".
+- Fixed: the numpad keys `-`, `/`, `*` and `+` and the Left arrow, pressed while renaming an item in the Collections tree, go to the name box. They acted on the tree.
+- Fixed: the scroll bars of the Collections tree and the History no longer hide themselves, so they do not cover the end of a row.
+- Fixed: empty folders and requests in the tree are indented like the folders beside them. They were one level too far left.
+
+### Not signed
+
+The executables are not code-signed. SignPath Foundation declined the application for now, because the project does not yet have enough public visibility, and the project will apply again later. See the README for the SmartScreen and Smart App Control notes (Windows), and verify every download against `SHA256SUMS.txt`. With the folder package, the program's own DLLs are unsigned files too.
+
+### Known limitations
+
+- A very long line without spaces is wrapped very slowly. This is not new. In a test a 200,000-character line took 25 seconds and a 400,000-character line more than 90 seconds, so a large minified response without spaces can freeze the response view.
+- Import from a URL was not tried against running swagger-ui-express, springdoc, FastAPI or Redoc services. The tests cover them with sample pages.
+- A specification file with thousands of chained references is slow to read (10,000 took 77 seconds).
+- A file exported from RestDraft holds Basic auth passwords and tokens in plain text.
+- The limitations listed under 0.1.1 (Linux) and 0.1.0 still apply.
 
 ## 0.3.0 (import and export, a filter popup and a folder package)
 
