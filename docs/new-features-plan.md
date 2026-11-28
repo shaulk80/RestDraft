@@ -1,6 +1,6 @@
 # New features: implementation plan
 
-Status (2026-11-28): approved. PRs 1 (#26), 2 (#28), 3 (#29), 4 (#31) and 5 (#32) are merged, PR 6 is implemented on its branch and not merged. Requirements and decisions: `new-features-requirements.md`.
+Status (2026-11-28): approved. PRs 1 (#26), 2 (#28), 3 (#29), 4 (#31), 5 (#32) and 6 (#34) are merged. Requirements and decisions: `new-features-requirements.md`.
 
 ## 1. Delivery
 
