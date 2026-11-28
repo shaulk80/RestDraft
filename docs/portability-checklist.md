@@ -9,7 +9,7 @@ SHA-256 (from `dist/SHA256SUMS.txt`): ______________________________
 
 Machine: ______________________  Windows version: ______________  Date: ____________
 
-Before 0.4.0: on 2026-11-28 the owner ran the app on Windows from Visual Studio and reported that the checks passed. That is not the release zip, so this section is still to be done on the 0.4.0 draft zip.
+Result for 0.4.0: verified by the owner on the release assets, reported on 2026-11-28. Machine, Windows version and per-step results were not recorded.
 
 | # | Step | Expected | Result |
 |---|---|---|---|
@@ -30,6 +30,8 @@ Before 0.4.0: on 2026-11-28 the owner ran the app on Windows from Visual Studio 
 ## 2. Accessibility check (plan M7 task 1)
 
 Do it once per release, in light and in dark mode (Windows *Settings > Personalization > Colors*).
+
+Result for 0.4.0: verified by the owner on the release assets, reported on 2026-11-28. Machine and per-step results were not recorded.
 
 | # | Step | Expected | Result |
 |---|---|---|---|
@@ -62,7 +64,7 @@ Machine / VM: ______________________  Build: ______________  Date: ____________
 
 Result for the 0.3.0 folder package (exe + DLLs): checked by the owner and works as expected, reported on 2026-11-24. Machine, build and the exact behavior were not recorded.
 
-Result before 0.4.0: checked by the owner on Windows 11 and passed, reported on 2026-11-28. The build was not recorded, so repeat it with the downloaded 0.4.0 draft zip.
+Result for 0.4.0: verified by the owner on the release assets, reported on 2026-11-28. Machine, build and the exact behavior were not recorded.
 
 ## 4. Before the first public release (plan M8 task 4)
 
