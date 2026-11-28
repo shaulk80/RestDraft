@@ -9,6 +9,8 @@ SHA-256 (from `dist/SHA256SUMS.txt`): ______________________________
 
 Machine: ______________________  Windows version: ______________  Date: ____________
 
+Before 0.4.0: on 2026-11-28 the owner ran the app on Windows from Visual Studio and reported that the checks passed. That is not the release zip, so this section is still to be done on the 0.4.0 draft zip.
+
 | # | Step | Expected | Result |
 |---|---|---|---|
 | 1 | Compare the zip hash with `SHA256SUMS.txt` | Hashes are equal | |
@@ -60,6 +62,8 @@ Machine / VM: ______________________  Build: ______________  Date: ____________
 
 Result for the 0.3.0 folder package (exe + DLLs): checked by the owner and works as expected, reported on 2026-11-24. Machine, build and the exact behavior were not recorded.
 
+Result before 0.4.0: checked by the owner on Windows 11 and passed, reported on 2026-11-28. The build was not recorded, so repeat it with the downloaded 0.4.0 draft zip.
+
 ## 4. Before the first public release (plan M8 task 4)
 
 - [x] Apply to SignPath Foundation (Q7). Outcome: **declined** (answer received by 2026-10-31): the project does not yet show enough public visibility (stars, forks, contributors, articles, discussions). Reapply when it does. The owner declined the paid subscription.
@@ -99,7 +103,7 @@ Findings:
 
 File > Import... and File > Export... use the system file dialogs of Avalonia (`StorageProvider`). Checked by the owner with 0.3.0 on Windows and on Linux under WSL2 (same Ubuntu 24.04 setup as above, not a full Linux desktop) and works as expected, reported on 2026-11-24. The checks were: the open dialog shows `*.yaml` and `*.yml` files, the save dialog proposes `<collection name>.yaml` and asks before it overwrites, and a file written to a folder without permission gives a message instead of an error.
 
-Added after 0.3.0 and not yet checked on Linux: the open dialog starts on "All supported files" and shows `*.yaml`, `*.yml` and `*.json`; an OpenAPI file shows the Base URL box in the preview and imports. Also not checked on Linux: File > Import from URL... (step 3c of section 2).
+Added after 0.3.0: the open dialog starts on "All supported files" and shows `*.yaml`, `*.yml` and `*.json`; an OpenAPI file shows the Base URL box in the preview and imports; File > Import from URL... (step 3c of section 2). Checked under WSL2 before 0.4.0 (see below), not on a full Linux desktop.
 
 ### Re-check of the exe + DLLs package (2026-11-18)
 
@@ -112,6 +116,22 @@ Same machine and WSL as above. The package stopped being single-file (decision o
 | 3 | The native libraries (`libSkiaSharp.so`, `libHarfBuzzSharp.so`, `libe_sqlite3.so`, `libonigwrap.so`) are files next to the executable | Pass |
 | 4 | `~/.net/RestDraft` gets no new folder when the app runs | Pass |
 | 5 | The window opens under WSLg and the app runs | Pass (see the WSLg note below) |
+
+### Checks before 0.4.0 (2026-11-28)
+
+Checked by the owner by hand under WSL2 and reported passed. Windows 10 build 19045.6456, WSL 3.0.3.0, kernel 6.18.54.1-1, WSLg 1.0.79, Ubuntu 24.04.5 LTS. The package used was not recorded.
+
+| # | Check | Result |
+|---|---|---|
+| 1 | File > Import...: the dialog starts on "All supported files"; the Petstore as a Swagger 2.0 JSON file and an OpenAPI 3.0 YAML file show the Base URL box and import | Pass |
+| 2 | File > Import from URL...: the public Petstore opens the preview; a wrong address keeps the dialog open with the reason | Pass |
+| 3 | Overwrite while a tab has unsaved edits: "Confirm import" with an "Import" button, and the tab reloads | Pass |
+| 4 | New request in the tree: the name is selected; Enter and Escape move to the URL box | Pass |
+| 5 | Track active request: follows a click, Ctrl+Tab, a closed tab and a filter, and stays on after a restart | Pass |
+| 6 | Search in the response in both themes: F3, Shift+F3, Match case, Whole word, Escape; Ctrl+F in the URL box opens the filter | Pass |
+| 7 | Tabs and folders can be dragged to new places; the windows have the icon | Pass |
+
+Not covered: Import from URL with a local service, a required header or a self-signed certificate; search in a very long line.
 
 ### Testing on WSL: avoid a false slowness
 
