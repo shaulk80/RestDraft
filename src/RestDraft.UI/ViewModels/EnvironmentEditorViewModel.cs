@@ -143,7 +143,7 @@ public sealed class EnvironmentEditorViewModel : ViewModelBase
         }
 
         var confirmed = await _confirmations.ConfirmAsync(
-            $"Delete the environment '{selected.Name}' and its variables, including stored secrets? This cannot be undone.",
+            ConfirmationRequest.Delete($"Delete the environment '{selected.Name}' and its variables, including stored secrets? This cannot be undone."),
             CancellationToken.None);
         if (!confirmed)
         {

@@ -1,11 +1,19 @@
+using RestDraft.UI.Services;
+
 namespace RestDraft.UI.ViewModels;
 
 public sealed class ConfirmationViewModel : ViewModelBase
 {
-    public ConfirmationViewModel(string message)
+    private readonly ConfirmationRequest _request;
+
+    public ConfirmationViewModel(ConfirmationRequest request)
     {
-        Message = message;
+        _request = request;
     }
 
-    public string Message { get; }
+    public string Title => _request.Title;
+
+    public string Message => _request.Message;
+
+    public string ConfirmText => _request.ConfirmText;
 }

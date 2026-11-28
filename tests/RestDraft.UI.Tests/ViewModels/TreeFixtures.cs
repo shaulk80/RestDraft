@@ -21,7 +21,7 @@ internal sealed class TreeFixtures
         Requests = A.Fake<IRequestService>();
         Tree = A.Fake<ICollectionTreeService>();
         Confirmations = A.Fake<IConfirmationDialogs>();
-        A.CallTo(() => Confirmations.ConfirmAsync(A<string>._, A<CancellationToken>._)).Returns(Task.FromResult(true));
+        A.CallTo(() => Confirmations.ConfirmAsync(A<ConfirmationRequest>._, A<CancellationToken>._)).Returns(Task.FromResult(true));
         SetCollections([Shop]);
     }
 

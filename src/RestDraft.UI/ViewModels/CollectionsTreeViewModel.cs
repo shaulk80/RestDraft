@@ -271,7 +271,7 @@ public sealed class CollectionsTreeViewModel : ViewModelBase
     public async Task DeleteAsync(TreeNodeViewModel node)
     {
         var confirmed = await _confirmations.ConfirmAsync(
-            $"Delete '{node.Name}'? Its contents and any unsaved edits in open tabs are lost. This cannot be undone.",
+            ConfirmationRequest.Delete($"Delete '{node.Name}'? Its contents and any unsaved edits in open tabs are lost. This cannot be undone."),
             CancellationToken.None);
         if (!confirmed)
         {
